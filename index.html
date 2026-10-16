@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Python</title>
-    <!-- CodeMirror pour l'éditeur de code -->
+    <title>Python+</title>
+    <!-- CodeMirror -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/nord.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
-    <!-- FontAwesome pour les icônes -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Identity Services (GIS) officiel -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Pyodide pour l'exécution Python dans le navigateur -->
+    <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <style>
         :root {
@@ -29,6 +29,7 @@
             --danger-color: #f38ba8;
             --font-family: 'Consolas', 'Courier New', monospace;
             --font-size: 14px;
+            --line-height: 1.5;
         }
 
         [data-theme="light"] {
@@ -43,12 +44,7 @@
             --danger-color: #dc3545;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: var(--font-family);
             background-color: var(--bg-primary);
@@ -58,9 +54,46 @@
             flex-direction: column;
             overflow: hidden;
             font-size: var(--font-size);
+            animation: fadeIn 0.4s ease-in-out;
         }
 
-        /* Barre d'outils supérieure */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Écran de glisser-déposer avec animation */
+        #dropZoneOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(30, 30, 46, 0.95);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            border: 4px dashed var(--accent-color);
+            animation: pulseOverlay 1.5s infinite alternate;
+        }
+        @keyframes pulseOverlay {
+            from { border-color: var(--accent-color); }
+            to { border-color: var(--success-color); }
+        }
+        #dropZoneOverlay.active { display: flex; }
+        .drop-content {
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+            animation: bounceIcon 0.8s infinite alternate;
+        }
+        @keyframes bounceIcon {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
         header {
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
@@ -72,35 +105,29 @@
             gap: 10px;
         }
 
-        .toolbar-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-logo {
-            height: 28px;
-            object-fit: contain;
-        }
+        .toolbar-group { display: flex; align-items: center; gap: 10px; }
+        .brand-logo { height: 28px; object-fit: contain; }
 
         button, select {
             background-color: var(--bg-tertiary);
             color: var(--text-color);
             border: 1px solid var(--border-color);
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: inherit;
             font-size: 13px;
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: background 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        button:hover, select:hover {
-            background-color: var(--border-color);
+        button:hover, select:hover { 
+            background-color: var(--border-color); 
+            transform: translateY(-1px);
         }
+        button:active { transform: translateY(1px); }
 
         button.primary {
             background-color: var(--accent-color);
@@ -108,35 +135,12 @@
             font-weight: bold;
             border: none;
         }
+        button.primary:hover { background-color: var(--accent-hover); }
 
-        button.primary:hover {
-            background-color: var(--accent-hover);
-        }
+        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .editor-section { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); position: relative; min-width: 250px; }
 
-        /* Interface principale avec redimensionnement dynamique */
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .editor-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border-color);
-            position: relative;
-            min-width: 250px;
-        }
-
-        /* Séparateur redimensionnable vertical (entre éditeur et panneau droit) */
-        .resizer-x {
-            width: 6px;
-            background-color: var(--border-color);
-            cursor: col-resize;
-            z-index: 50;
-        }
+        .resizer-x { width: 6px; background-color: var(--border-color); cursor: col-resize; z-index: 50; transition: background 0.2s; }
         .resizer-x:hover { background-color: var(--accent-color); }
 
         .sidebar-right {
@@ -154,18 +158,12 @@
             height: auto !important;
             font-family: var(--font-family) !important;
             font-size: var(--font-size) !important;
+            line-height: var(--line-height) !important;
         }
 
-        /* Séparateur redimensionnable horizontal (Console) */
-        .resizer-y {
-            height: 6px;
-            background-color: var(--border-color);
-            cursor: row-resize;
-            z-index: 50;
-        }
+        .resizer-y { height: 6px; background-color: var(--border-color); cursor: row-resize; z-index: 50; transition: background 0.2s; }
         .resizer-y:hover { background-color: var(--accent-color); }
 
-        /* Console d'exécution */
         .console-section {
             height: 200px;
             min-height: 60px;
@@ -194,76 +192,112 @@
             font-size: 13px;
             white-space: pre-wrap;
             background-color: rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s ease;
         }
 
-        /* Ligne d'erreur en surbrillance rouge permanente */
         .error-line-highlight {
-            background-color: rgba(243, 139, 168, 0.3) !important;
+            background-color: rgba(243, 139, 168, 0.4) !important;
             border-left: 4px solid var(--danger-color);
+            transition: background-color 0.3s ease;
         }
 
-        /* Panneau latéral (Commentaires & Collaboration & Participants) */
-        .panel-tabs {
-            display: flex;
-            background-color: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
-        }
-
+        .panel-tabs { display: flex; background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color); }
         .tab-btn {
             flex: 1;
-            padding: 8px 4px;
+            padding: 10px 4px;
             text-align: center;
             background: none;
             border: none;
-            border-radius: 0;
             font-weight: bold;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 12px;
+            transition: background 0.2s, color 0.2s;
         }
+        .tab-btn.active { border-bottom: 2px solid var(--accent-color); background-color: var(--bg-secondary); color: var(--accent-color); }
 
-        .tab-btn.active {
-            border-bottom: 2px solid var(--accent-color);
-            background-color: var(--bg-secondary);
-        }
+        .tab-content { flex: 1; padding: 12px; overflow-y: auto; display: none; flex-direction: column; gap: 14px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: flex; }
 
-        .tab-content {
-            flex: 1;
-            padding: 12px;
-            overflow-y: auto;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .tab-content.active {
-            display: flex;
-        }
+        .section-title { font-size: 12px; font-weight: bold; color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center; }
 
         .comment-box {
             background-color: var(--bg-tertiary);
             padding: 8px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
             border-left: 3px solid var(--accent-color);
-        }
-
-        .comment-input-area {
             display: flex;
-            gap: 5px;
-            margin-top: auto;
+            flex-direction: column;
+            gap: 4px;
+            animation: slideInComment 0.3s ease;
+        }
+        @keyframes slideInComment {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comment-input-area { display: flex; gap: 5px; margin-top: auto; }
         input[type="text"] {
             flex: 1;
             background-color: var(--bg-primary);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 6px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
             font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { border-color: var(--accent-color); outline: none; }
+
+        /* Avatar / Photo de profil */
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #11111b;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            overflow: hidden;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+        .avatar:hover { transform: scale(1.05); }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-clickable {
+            cursor: pointer;
+            position: relative;
+        }
+        .avatar-clickable:hover::after {
+            content: "\f030";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            border-radius: 50%;
         }
 
-        /* Modales personnalisées au milieu de l'écran */
         .modal {
             display: flex;
             position: fixed;
@@ -272,166 +306,179 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
+            animation: fadeInModal 0.25s ease;
+        }
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
             background-color: var(--bg-secondary);
             padding: 24px;
-            border-radius: 8px;
-            width: 440px;
+            border-radius: 10px;
+            width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 15px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
             text-align: center;
+            animation: scaleUpModal 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes scaleUpModal {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            text-align: left;
-        }
-
-        .badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-            background: var(--accent-color);
-            color: #111;
-        }
-
+        .form-group { display: flex; flex-direction: column; gap: 5px; text-align: left; }
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--bg-tertiary);
             padding: 6px 10px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
+            animation: fadeIn 0.3s ease;
         }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background-color: var(--border-color); transform: scale(1.05); }
+        .icon-btn.danger { color: var(--danger-color); border-color: var(--danger-color); }
+        .icon-btn.danger:hover { background-color: rgba(243, 139, 168, 0.2); }
     </style>
 </head>
 <body data-theme="dark">
 
-    <!-- Blocage de l'outil Inspecter & Raccourcis -->
+    <!-- Protection contre l'inspection -->
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
                 e.preventDefault();
-                alert("Inspection interdite.");
                 return false;
             }
         });
     </script>
 
-    <!-- Modale Connexion Google Officielle GIS (Au milieu de l'écran) -->
-    <div id="googleAuthModal" class="modal">
-        <div class="modal-content">
-            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" class="brand-logo" style="height: 40px; margin: 0 auto;" alt="Logo">
-            <h3>Connexion Google Requise</h3>
-            <p style="font-size: 13px; color: #a1a1aa;">Veuillez vous authentifier pour accéder à l'espace collaboratif en direct.</p>
-            <div id="g_id_onload"
-                 data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
-            </div>
-            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
-            <!-- Bouton de secours si le client ID n'est pas encore configuré -->
-            <button class="primary" style="margin-top:10px; justify-content:center;" onclick="manualGoogleLoginSimulation()">Connexion Rapide Google</button>
+    <!-- Écran de glisser-déposer -->
+    <div id="dropZoneOverlay">
+        <div class="drop-content">
+            <i class="fa-solid fa-file-arrow-down fa-3x"></i>
+            <span id="txtDropOverlay">Relâchez votre fichier Python ici pour l'importer</span>
         </div>
     </div>
 
-    <!-- Modale Personnalisée (Alert / Prompt) -->
+    <!-- Modale Pseudo Obligatoire -->
+    <div id="pseudoModal" class="modal">
+        <div class="modal-content">
+            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" class="brand-logo" style="height: 40px; margin: 0 auto;" alt="Logo">
+            <h3 id="txtModalWelcomeTitle">Bienvenue par ici !</h3>
+            <p id="txtModalWelcomeSub" style="font-size: 13px; color: #a1a1aa;">Choisis un petit pseudo sympa pour qu'on sache qui est là :</p>
+            <input type="text" id="pseudoInput" placeholder="Ton pseudo..." style="padding: 10px; font-size: 14px;" autofocus>
+            <button class="primary" id="btnWelcomeEnter" onclick="validatePseudo()" style="justify-content: center; padding: 10px;">C'est parti !</button>
+        </div>
+    </div>
+
+    <!-- Modale Personnalisée Générique -->
     <div id="customModal" class="modal" style="display: none;">
         <div class="modal-content">
             <h3 id="customModalTitle">Information</h3>
             <p id="customModalText" style="font-size: 13px; color: #a1a1aa;"></p>
             <input type="text" id="customModalInput" style="display:none; margin-top: 5px;">
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
-                <button id="customModalCancel" style="display:none;" onclick="closeCustomModal(false)">Annuler</button>
-                <button class="primary" onclick="closeCustomModal(true)">OK</button>
+                <button id="customModalCancel" onclick="closeCustomModal(false)">Annuler</button>
+                <button class="primary" id="customModalOk" onclick="closeCustomModal(true)">Valider</button>
             </div>
         </div>
     </div>
+
+    <!-- Input caché pour charger l'avatar -->
+    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarUpload(this)">
 
     <!-- Barre d'outils -->
     <header>
         <div class="toolbar-group">
             <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" class="brand-logo" alt="Logo">
-            <button class="primary" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
-            <select id="execMode" onchange="changeExecMode()">
-                <option value="individual">Mode Individuel</option>
-                <option value="collective">Mode Collectif (Synchro)</option>
+            <button class="primary" id="btnRun" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
+            <select id="execMode" onchange="updateUITexts()">
+                <option value="individual">mode solo</option>
+                <option value="collective" id="optModeCollab">mode collab</option>
             </select>
-            <button onclick="editSessionName()"><i class="fa-solid fa-pen"></i> <span id="sessionNameDisplay">Mon Projet Python</span></button>
         </div>
         <div class="toolbar-group">
-            <span id="userInfoDisplay" class="badge">Non connecté</span>
-            <button onclick="shareProject()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
-            <button onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
+            <button id="btnExport" onclick="exportPython()"><i class="fa-solid fa-file-arrow-down"></i> Exporter .py</button>
+            <button id="btnShare" onclick="shareProject()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
+            <button id="btnSettings" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
         </div>
     </header>
 
-    <!-- Contenu Principal avec redimensionnement -->
+    <!-- Contenu Principal -->
     <div class="main-container" id="mainContainer">
-        <!-- Éditeur et Console -->
         <div class="editor-section" id="editorSection">
             <textarea id="codeEditor"></textarea>
-            <!-- Séparateur redimensionnable vertical de la console -->
             <div class="resizer-y" id="resizerY"></div>
             <div class="console-section" id="consoleSection">
                 <div class="console-header">
-                    <span><i class="fa-solid fa-terminal"></i> Console Python</span>
-                    <button onclick="clearConsole()" style="padding: 2px 6px; font-size:11px;">Effacer</button>
+                    <span><i class="fa-solid fa-terminal"></i> <span id="txtConsoleTitle">Console Python</span></span>
+                    <button id="btnClearConsole" onclick="clearConsole()" style="padding: 2px 6px; font-size:11px;">Nettoyer</button>
                 </div>
-                <div id="consoleOutput" class="console-output">Initialisation de Pyodide (Python Web)... Attendez...</div>
+                <div id="consoleOutput" class="console-output">Chargement du moteur Python en cours... Patiente un instant.</div>
             </div>
         </div>
 
-        <!-- Séparateur redimensionnable horizontal du panneau droit -->
         <div class="resizer-x" id="resizerX"></div>
 
-        <!-- Panneau latéral (Collaboration & Historique & Participants) -->
+        <!-- Panneau latéral : 2 onglets (Projet & Chat) -->
         <div class="sidebar-right" id="sidebarRight">
             <div class="panel-tabs">
-                <button class="tab-btn active" onclick="switchTab('collab')">Projet</button>
-                <button class="tab-btn" onclick="switchTab('users')">Participants</button>
-                <button class="tab-btn" onclick="switchTab('history')">Activité</button>
-                <button class="tab-btn" onclick="switchTab('comments')">Chat</button>
+                <button class="tab-btn active" id="tabBtnProject" onclick="switchTab('collab')">Projet</button>
+                <button class="tab-btn" id="tabBtnChat" onclick="switchTab('comments')">Chat</button>
             </div>
 
-            <!-- Onglet Projet -->
+            <!-- Onglet Projet (Nom, Participants & Activités) -->
             <div id="tab-collab" class="tab-content active">
                 <div class="form-group">
-                    <label>ID de Session :</label>
-                    <input type="text" id="projectIdInput" readonly>
+                    <label id="lblProjectName">Nom du projet :</label>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" id="projectNameInput" readonly style="flex: 1;">
+                        <button onclick="editSessionName()" style="padding: 6px 10px;" title="Renommer"><i class="fa-solid fa-pen"></i></button>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Statut :</label>
-                    <span id="syncStatus" style="color: var(--success-color); font-size: 13px;"><i class="fa-solid fa-circle-check"></i> En direct (Firebase)</span>
+                    <label id="lblStatus">État de la connexion :</label>
+                    <span id="syncStatus" style="color: var(--success-color); font-size: 13px;"><i class="fa-solid fa-circle-check"></i> <span id="txtConnected">Connecté en direct</span></span>
                 </div>
-                <p style="font-size: 12px; color: #888;">Partagez le lien. Le créateur peut gérer les droits des participants depuis l'onglet Participants.</p>
-            </div>
 
-            <!-- Onglet Participants & Pleins pouvoirs Admin -->
-            <div id="tab-users" class="tab-content">
-                <p style="font-size:11px; color:#888;">Gestion des accès par le créateur de la session :</p>
+                <div class="section-title" id="secParticipants"><i class="fa-solid fa-users"></i> Participants connectés</div>
                 <div id="participantsList" style="display:flex; flex-direction:column; gap:6px;"></div>
-            </div>
 
-            <!-- Onglet Activité (Qui modifie quoi et quand) -->
-            <div id="tab-history" class="tab-content">
-                <div id="activityLogList" style="display:flex; flex-direction:column; gap:6px; font-size:11px;"></div>
+                <div class="section-title" id="secActivity">
+                    <span><i class="fa-solid fa-clock-rotate-left"></i> Historique des modifications</span>
+                    <button class="icon-btn" onclick="toggleActivityLog()" id="btnToggleActivity" style="padding: 2px 6px; font-size: 10px;" title="Cacher / Afficher"><i class="fa-solid fa-eye-slash"></i></button>
+                </div>
+                <div id="activityLogContainer" style="display:flex; flex-direction:column; gap:6px;">
+                    <div id="activityLogList" style="display:flex; flex-direction:column; gap:6px; font-size:11px;"></div>
+                </div>
             </div>
 
             <!-- Onglet Chat -->
             <div id="tab-comments" class="tab-content">
                 <div id="commentsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
                 <div class="comment-input-area">
-                    <input type="text" id="newCommentInput" placeholder="Message...">
+                    <input type="text" id="newCommentInput" placeholder="Écris ton message..." onkeypress="if(event.key==='Enter') addComment()">
                     <button onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
@@ -441,43 +488,232 @@
     <!-- Modal Paramètres -->
     <div id="settingsModal" class="modal" style="display:none;">
         <div class="modal-content">
-            <h3><i class="fa-solid fa-gear"></i> Paramètres & Personnalisation</h3>
+            <h3 id="txtSettingsTitle"><i class="fa-solid fa-gear"></i> Paramètres du Studio</h3>
+            
             <div class="form-group">
-                <label>Thème :</label>
+                <label id="lblSettingLang">Langue de l'interface :</label>
+                <select id="interfaceLangSelect" onchange="updateUITexts()">
+                    <option value="fr" selected>Français</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="lblSettingErr">Traduction courte des erreurs :</label>
+                <select id="errorLangSelect">
+                    <option value="fr" selected>Activé (Français court)</option>
+                    <option value="off">Désactivé (Anglais technique)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="lblSettingTheme">Thème visuel :</label>
                 <select id="themeSelect" onchange="updateTheme()">
                     <option value="dark">Sombre (Dracula)</option>
                     <option value="light">Clair (Eclipse)</option>
                     <option value="monokai">Monokai</option>
+                    <option value="material">Material</option>
+                    <option value="nord">Nord</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label>Police :</label>
+                <label id="lblSettingFont">Police d'écriture :</label>
                 <select id="fontSelect" onchange="updateFont()">
                     <option value="Consolas, monospace">Consolas</option>
                     <option value="'Courier New', monospace">Courier New</option>
                     <option value="'Fira Code', monospace">Fira Code</option>
+                    <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label>Taille de police :</label>
+                <label id="lblSettingSize">Taille du texte :</label>
                 <select id="fontSizeSelect" onchange="updateFontSize()">
                     <option value="12px">12px</option>
                     <option value="14px" selected>14px</option>
                     <option value="16px">16px</option>
                     <option value="18px">18px</option>
+                    <option value="20px">20px</option>
                 </select>
             </div>
-            <button class="primary" onclick="closeSettings()" style="align-self: flex-end;">Fermer</button>
+
+            <div class="form-group">
+                <label id="lblSettingLineHeight">Interligne :</label>
+                <select id="lineHeightSelect" onchange="updateLineHeight()">
+                    <option value="1.2">Compact (1.2)</option>
+                    <option value="1.5" selected>Normal (1.5)</option>
+                    <option value="1.8">Grand (1.8)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="lblSettingLineNum">Numérotation des lignes :</label>
+                <select id="lineNumSelect" onchange="updateLineNumbers()">
+                    <option value="yes" selected>Afficher</option>
+                    <option value="no">Masquer</option>
+                </select>
+            </div>
+
+            <button class="primary" id="btnCloseSettings" onclick="closeSettings()" style="align-self: flex-end;">Fermer</button>
         </div>
     </div>
 
-    <!-- Scripts CodeMirror -->
+    <!-- CodeMirror Scripts & Addons Hint -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
 
-    <!-- Firebase SDK & Logique Application -->
+    <!-- Dictionnaire multilingue -->
+    <script>
+        const dict = {
+            fr: {
+                run: "Exécuter",
+                export: "Exporter .py",
+                share: "Partager",
+                settings: "Paramètres",
+                consoleTitle: "Console Python",
+                clear: "Nettoyer",
+                consoleReady: "Le moteur Python est prêt ! Tu peux cliquer sur 'Exécuter'.",
+                projectTab: "Projet",
+                chatTab: "Chat",
+                projectName: "Nom du projet :",
+                status: "État de la connexion :",
+                connected: "Connecté en direct",
+                participants: "Participants connectés",
+                activity: "Historique des modifications",
+                chatPlaceholder: "Écris ton message...",
+                settingsTitle: "Paramètres du Studio",
+                lblLang: "Langue de l'interface :",
+                lblErr: "Traduction courte des erreurs :",
+                lblTheme: "Thème visuel :",
+                lblFont: "Police d'écriture :",
+                lblSize: "Taille du texte :",
+                lblLineHeight: "Interligne :",
+                lblLineNum: "Numérotation des lignes :",
+                close: "Fermer",
+                welcomeTitle: "Bienvenue par ici !",
+                welcomeSub: "Choisis un petit pseudo sympa pour qu'on sache qui est là :",
+                welcomePlaceholder: "Ton pseudo...",
+                welcomeBtn: "C'est parti !",
+                renameTitle: "Renommer le projet",
+                renameSub: "Entre le nouveau nom que tu souhaites donner au projet :",
+                shareTitle: "Partager ton projet",
+                shareSub: "Voici le lien d'invitation à copier pour collaborer en direct :",
+                linkCopied: "Lien copié !",
+                cancel: "Annuler",
+                validate: "Valider",
+                kickConfirmTitle: "Confirmer l'exclusion",
+                kickConfirmSub: "Veux-tu vraiment exclure ce participant ?",
+                banConfirmTitle: "Confirmer le bannissement",
+                banConfirmSub: "Veux-tu vraiment bannir ce participant ?",
+                unauthorizedTitle: "Action non autorisée",
+                unauthorizedSub: "Seul le créateur de la session peut effectuer cette action.",
+                dropText: "Relâchez votre fichier Python ici pour l'importer"
+            },
+            en: {
+                run: "Run",
+                export: "Export .py",
+                share: "Share",
+                settings: "Settings",
+                consoleTitle: "Python Console",
+                clear: "Clear",
+                consoleReady: "Python engine is ready! Click 'Run'.",
+                projectTab: "Project",
+                chatTab: "Chat",
+                projectName: "Project Name:",
+                status: "Connection Status:",
+                connected: "Live Connected",
+                participants: "Connected Participants",
+                activity: "Activity History",
+                chatPlaceholder: "Type your message...",
+                settingsTitle: "Studio Settings",
+                lblLang: "Interface Language:",
+                lblErr: "Short Error Translation:",
+                lblTheme: "Visual Theme:",
+                lblFont: "Font Family:",
+                lblSize: "Font Size:",
+                lblLineHeight: "Line Height:",
+                lblLineNum: "Line Numbers:",
+                close: "Close",
+                welcomeTitle: "Welcome here!",
+                welcomeSub: "Choose a nice nickname so we know who you are:",
+                welcomePlaceholder: "Your nickname...",
+                welcomeBtn: "Let's go!",
+                renameTitle: "Rename Project",
+                renameSub: "Enter the new name for your project:",
+                shareTitle: "Share Your Project",
+                shareSub: "Here is your invitation link to copy for live collaboration:",
+                linkCopied: "Link copied!",
+                cancel: "Cancel",
+                validate: "Confirm",
+                kickConfirmTitle: "Confirm Kick",
+                kickConfirmSub: "Do you really want to kick this participant?",
+                banConfirmTitle: "Confirm Ban",
+                banConfirmSub: "Do you really want to ban this participant?",
+                unauthorizedTitle: "Unauthorized Action",
+                unauthorizedSub: "Only the session creator can perform this action.",
+                dropText: "Drop your Python file here to import it"
+            }
+        };
+
+        function getLang() {
+            return document.getElementById('interfaceLangSelect').value || 'fr';
+        }
+
+        function updateUITexts() {
+            const l = getLang();
+            const d = dict[l];
+
+            document.getElementById('btnRun').innerHTML = `<i class="fa-solid fa-play"></i> ${d.run}`;
+            document.getElementById('btnExport').innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> ${d.export}`;
+            document.getElementById('btnShare').innerHTML = `<i class="fa-solid fa-share-nodes"></i> ${d.share}`;
+            document.getElementById('btnSettings').innerHTML = `<i class="fa-solid fa-gear"></i> ${d.settings}`;
+            document.getElementById('txtConsoleTitle').innerText = d.consoleTitle;
+            document.getElementById('btnClearConsole').innerText = d.clear;
+            document.getElementById('tabBtnProject').innerText = d.projectTab;
+            document.getElementById('tabBtnChat').innerText = d.chatTab;
+            document.getElementById('lblProjectName').innerText = d.projectName;
+            document.getElementById('lblStatus').innerText = d.status;
+            document.getElementById('txtConnected').innerText = d.connected;
+            document.getElementById('secParticipants').innerHTML = `<i class="fa-solid fa-users"></i> ${d.participants}`;
+            document.getElementById('newCommentInput').placeholder = d.chatPlaceholder;
+            document.getElementById('txtSettingsTitle').innerHTML = `<i class="fa-solid fa-gear"></i> ${d.settingsTitle}`;
+            document.getElementById('lblSettingLang').innerText = d.lblLang;
+            document.getElementById('lblSettingErr').innerText = d.lblErr;
+            document.getElementById('lblSettingTheme').innerText = d.lblTheme;
+            document.getElementById('lblSettingFont').innerText = d.lblFont;
+            document.getElementById('lblSettingSize').innerText = d.lblSize;
+            document.getElementById('lblSettingLineHeight').innerText = d.lblLineHeight;
+            document.getElementById('lblSettingLineNum').innerText = d.lblLineNum;
+            document.getElementById('btnCloseSettings').innerText = d.close;
+            document.getElementById('txtModalWelcomeTitle').innerText = d.welcomeTitle;
+            document.getElementById('txtModalWelcomeSub').innerText = d.welcomeSub;
+            document.getElementById('pseudoInput').placeholder = d.welcomePlaceholder;
+            document.getElementById('btnWelcomeEnter').innerText = d.welcomeBtn;
+            document.getElementById('txtDropOverlay').innerText = d.dropText;
+            document.getElementById('customModalCancel').innerText = d.cancel;
+            document.getElementById('customModalOk').innerText = d.validate;
+        }
+
+        let activityLogVisible = true;
+        function toggleActivityLog() {
+            activityLogVisible = !activityLogVisible;
+            const container = document.getElementById('activityLogContainer');
+            const btn = document.getElementById('btnToggleActivity');
+            if(activityLogVisible) {
+                container.style.display = 'flex';
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            }
+        }
+    </script>
+
+    <!-- Firebase SDK & Logique -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -489,66 +725,52 @@
         const db = getDatabase(app);
 
         const urlParams = new URLSearchParams(window.location.search);
-        let projectId = urlParams.get('project') || 'projet_' + Math.random().toString(36).substring(2, 8);
-        document.getElementById('projectIdInput').value = projectId;
+        let projectId = urlParams.get('project');
+
+        // Mettre le mode collab par défaut si un projet est présent dans le lien
+        if(projectId) {
+            document.getElementById('execMode').value = 'collective';
+        } else {
+            projectId = 'projet_' + Math.random().toString(36).substring(2, 8);
+        }
 
         window.firebaseDB = { db, ref, set, onValue, push, update, remove, projectId };
         window.currentUser = null;
         window.isCreator = false;
 
-        // Réponse officielle Google Identity Services (GIS)
-        window.handleCredentialResponse = function(response) {
-            const responsePayload = decodeJwtResponse(response.credential);
-            completeLogin(responsePayload.email, responsePayload.name);
-        }
+        window.validatePseudo = function() {
+            const pseudo = document.getElementById('pseudoInput').value.trim();
+            const l = getLang();
+            if(!pseudo) {
+                showCustomModal(dict[l].unauthorizedTitle, dict[l].welcomeSub, false, () => {});
+                return;
+            }
+            const userId = 'user_' + Math.random().toString(36).substring(2, 8);
+            window.currentUser = { id: userId, pseudo, avatar: '' };
+            document.getElementById('pseudoModal').style.display = 'none';
 
-        function decodeJwtResponse(token) {
-            let base64Url = token.split('.')[1];
-            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
-
-        window.manualGoogleLoginSimulation = function() {
-            let email = prompt("Adresse e-mail Google :", "utilisateur@gmail.com");
-            if(!email) return;
-            let name = prompt("Votre Nom/Pseudo :", "Développeur");
-            completeLogin(email, name || "Anonyme");
-        }
-
-        function completeLogin(email, pseudo) {
-            window.currentUser = { email, pseudo };
-            document.getElementById('userInfoDisplay').innerText = `${pseudo} (${email})`;
-            document.getElementById('googleAuthModal').style.display = 'none';
-
-            // Vérifier si le créateur existe déjà dans la base
             const sessionRef = ref(db, 'projects/' + projectId + '/meta');
             onValue(sessionRef, (snap) => {
                 let data = snap.val();
-                if(!data || !data.creator) {
-                    // Premier connecté = Créateur avec pleins pouvoirs
-                    set(sessionRef, { creator: email, sessionName: "Mon Projet Python" });
+                if(!data || !data.creatorId) {
+                    set(sessionRef, { creatorId: userId, creatorPseudo: pseudo, sessionName: "Mon Projet Python" });
                     window.isCreator = true;
-                } else if(data.creator === email) {
+                } else if(data.creatorId === userId) {
                     window.isCreator = true;
                 } else {
                     window.isCreator = false;
                 }
             }, { onlyOnce: true });
 
-            // Enregistrer l'utilisateur dans les participants
-            const userKey = email.replace(/[.#$\/\[\]]/g, '_');
-            set(ref(db, 'projects/' + projectId + '/participants/' + userKey), {
-                email, pseudo, role: 'editor', status: 'active', lastActive: new Date().toLocaleTimeString()
+            set(ref(db, 'projects/' + projectId + '/participants/' + userId), {
+                pseudo, role: 'Rédacteur', status: 'active', avatar: '', lastActive: new Date().toLocaleTimeString()
             });
 
             window.initFirebaseSync();
         }
     </script>
 
-    <!-- Logique Éditeur, Redimensionnement, Activité et Exécution -->
+    <!-- Logique Éditeur, Redimensionnement, Autocomplétion & Collaboration -->
     <script>
         let pyodideReady = false;
         let pyodideInstance = null;
@@ -563,17 +785,24 @@
                 lineNumbers: true,
                 autoCloseBrackets: true,
                 indentUnit: 4,
-                lineWrapping: true
+                lineWrapping: true,
+                extraKeys: {"Ctrl-Space": "autocomplete"}
             });
 
-            editor.on('change', (cm, change) => {
+            // Déclencheur automatique de l'autocomplétion lors de la saisie
+            editor.on("inputRead", function(cm, change) {
+                if (change.text && change.text[0] && /^[a-zA-Z._]$/.test(change.text[0])) {
+                    CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                }
+            });
+
+            editor.on('change', () => {
                 if(isRemoteUpdate) return;
                 if(window.firebaseDB && window.currentUser) {
                     const { db, ref, update, push, projectId } = window.firebaseDB;
-                    let code = cm.getValue();
+                    let code = editor.getValue();
                     update(ref(db, 'projects/' + projectId), { code: code });
                     
-                    // Enregistrer l'activité "qui modifie quoi et quand"
                     push(ref(db, 'projects/' + projectId + '/activity'), {
                         user: window.currentUser.pseudo,
                         action: "a modifié le code source",
@@ -585,23 +814,65 @@
             try {
                 pyodideInstance = await loadPyodide();
                 pyodideReady = true;
-                document.getElementById('consoleOutput').innerText = "Environnement Python prêt (Pyodide v0.25.0).\nCliquez sur 'Exécuter'.";
+                document.getElementById('consoleOutput').innerText = dict[getLang()].consoleReady;
             } catch (err) {
-                document.getElementById('consoleOutput').innerText = "Erreur de chargement Pyodide : " + err;
+                document.getElementById('consoleOutput').innerText = "Aïe, impossible de charger Python : " + err;
             }
 
             initDynamicResizers();
+            initDragAndDrop();
         });
 
-        // Gestion du redimensionnement dynamique (Largeur / Longueur / Hauteur des fenêtres)
+        // Gestion du Glisser-Déposer de fichiers Python
+        function initDragAndDrop() {
+            const overlay = document.getElementById('dropZoneOverlay');
+            let dragCounter = 0;
+
+            window.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                dragCounter++;
+                overlay.classList.add('active');
+            });
+
+            window.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dragCounter--;
+                if (dragCounter === 0) {
+                    overlay.classList.remove('active');
+                }
+            });
+
+            window.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            window.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dragCounter = 0;
+                overlay.classList.remove('active');
+
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    let file = e.dataTransfer.files[0];
+                    if (!file.name.endsWith('.py') && !file.name.endsWith('.txt')) {
+                        showCustomModal("Format", "Format de fichier non valide (.py requis).", false, () => {});
+                        return;
+                    }
+                    let reader = new FileReader();
+                    reader.onload = function(event) {
+                        editor.setValue(event.target.result);
+                    };
+                    reader.readAsText(file);
+                }
+            });
+        }
+
         function initDynamicResizers() {
             const resizerX = document.getElementById('resizerX');
             const resizerY = document.getElementById('resizerY');
             const sidebarRight = document.getElementById('sidebarRight');
             const consoleSection = document.getElementById('consoleSection');
 
-            let resizingX = false;
-            let resizingY = false;
+            let resizingX = false, resizingY = false;
 
             resizerX.addEventListener('mousedown', () => resizingX = true);
             resizerY.addEventListener('mousedown', () => resizingY = true);
@@ -609,28 +880,20 @@
             window.addEventListener('mousemove', (e) => {
                 if (resizingX) {
                     let newWidth = window.innerWidth - e.clientX;
-                    if (newWidth > 180 && newWidth < 600) {
-                        sidebarRight.style.width = newWidth + 'px';
-                    }
+                    if (newWidth > 180 && newWidth < 600) sidebarRight.style.width = newWidth + 'px';
                 }
                 if (resizingY) {
                     let newHeight = window.innerHeight - e.clientY - 40;
-                    if (newHeight > 50 && newHeight < 500) {
-                        consoleSection.style.height = newHeight + 'px';
-                    }
+                    if (newHeight > 50 && newHeight < 500) consoleSection.style.height = newHeight + 'px';
                 }
             });
 
-            window.addEventListener('mouseup', () => {
-                resizingX = false;
-                resizingY = false;
-            });
+            window.addEventListener('mouseup', () => { resizingX = false; resizingY = false; });
         }
 
         window.initFirebaseSync = function() {
             const { db, ref, onValue, projectId } = window.firebaseDB;
             
-            // Sync Code et Nom de session
             onValue(ref(db, 'projects/' + projectId), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
@@ -642,7 +905,9 @@
                         isRemoteUpdate = false;
                     }
                     if(data.meta && data.meta.sessionName) {
-                        document.getElementById('sessionNameDisplay').innerText = data.meta.sessionName;
+                        document.getElementById('projectNameInput').value = data.meta.sessionName;
+                    } else {
+                        document.getElementById('projectNameInput').value = "Mon Projet Python";
                     }
                     if(data.output && document.getElementById('execMode').value === 'collective') {
                         document.getElementById('consoleOutput').innerText = data.output;
@@ -651,21 +916,21 @@
                     if(data.activity) renderActivity(data.activity);
                     if(data.participants) renderParticipants(data.participants);
 
-                    // Vérifier si banni ou kické
                     if(window.currentUser && data.participants) {
-                        let myKey = window.currentUser.email.replace(/[.#$\/\[\]]/g, '_');
+                        let myKey = window.currentUser.id;
                         if(data.participants[myKey] && data.participants[myKey].status === 'banned') {
-                            alert("Vous avez été banni de cette session par le créateur.");
-                            window.location.reload();
+                            showCustomModal("Exclusion", "Tu as été exclu de cette session.", false, () => {
+                                window.location.reload();
+                            });
                         }
                     }
                 }
             });
         }
 
-        // Modification du nom de la session
         function editSessionName() {
-            showCustomModal("Renommer la session", "Entrez le nouveau nom du projet :", true, (confirmed, val) => {
+            const l = getLang();
+            showCustomModal(dict[l].renameTitle, dict[l].renameSub, true, (confirmed, val) => {
                 if(confirmed && val.trim() && window.firebaseDB) {
                     const { db, ref, update, projectId } = window.firebaseDB;
                     update(ref(db, 'projects/' + projectId + '/meta'), { sessionName: val.trim() });
@@ -673,19 +938,47 @@
             });
         }
 
-        // Pleins pouvoirs du créateur (Kick, Ban, Promouvoir)
         window.moderateUser = function(userKey, action) {
+            const l = getLang();
             if(!window.isCreator) {
-                alert("Seul le créateur de la session possède les pleins pouvoirs.");
+                showCustomModal(dict[l].unauthorizedTitle, dict[l].unauthorizedSub, false, () => {});
                 return;
             }
             const { db, ref, update, remove, projectId } = window.firebaseDB;
             if(action === 'kick') {
-                remove(ref(db, 'projects/' + projectId + '/participants/' + userKey));
+                showCustomModal(dict[l].kickConfirmTitle, dict[l].kickConfirmSub, true, (confirmed) => {
+                    if(confirmed) remove(ref(db, 'projects/' + projectId + '/participants/' + userKey));
+                });
             } else if(action === 'ban') {
-                update(ref(db, 'projects/' + projectId + '/participants/' + userKey), { status: 'banned' });
+                showCustomModal(dict[l].banConfirmTitle, dict[l].banConfirmSub, true, (confirmed) => {
+                    if(confirmed) update(ref(db, 'projects/' + projectId + '/participants/' + userKey), { status: 'banned' });
+                });
             } else if(action === 'promote') {
-                update(ref(db, 'projects/' + projectId + '/participants/' + userKey), { role: 'co-admin' });
+                update(ref(db, 'projects/' + projectId + '/participants/' + userKey), { role: 'Co-admin' });
+            }
+        }
+
+        function triggerAvatarUpload() {
+            document.getElementById('avatarFileInput').click();
+        }
+
+        function handleAvatarUpload(input) {
+            if (input.files && input.files[0]) {
+                let file = input.files[0];
+                if (file.size > 500000) {
+                    showCustomModal("Fichier", "Image trop lourde (max 500 Ko).", false, () => {});
+                    return;
+                }
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let base64Img = e.target.result;
+                    if(window.currentUser && window.firebaseDB) {
+                        const { db, ref, update, projectId } = window.firebaseDB;
+                        window.currentUser.avatar = base64Img;
+                        update(ref(db, 'projects/' + projectId + '/participants/' + window.currentUser.id), { avatar: base64Img });
+                    }
+                };
+                reader.readAsDataURL(file);
             }
         }
 
@@ -694,14 +987,26 @@
             list.innerHTML = "";
             for(let key in partsObj) {
                 let p = partsObj[key];
+                let isMe = (window.currentUser && window.currentUser.id === key);
+                let avatarHTML = '';
+                if(p.avatar) {
+                    avatarHTML = `<div class="avatar ${isMe ? 'avatar-clickable' : ''}" ${isMe ? 'onclick="triggerAvatarUpload()"' : ''}><img src="${p.avatar}" alt="Avatar"></div>`;
+                } else {
+                    let initial = p.pseudo ? p.pseudo.charAt(0) : '?';
+                    avatarHTML = `<div class="avatar ${isMe ? 'avatar-clickable' : ''}" ${isMe ? 'onclick="triggerAvatarUpload()"' : ''}>${initial}</div>`;
+                }
+
                 list.innerHTML += `
                     <div class="user-item">
-                        <span><b>${p.pseudo}</b> (${p.role})</span>
-                        ${window.isCreator ? `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            ${avatarHTML}
+                            <span><b>${p.pseudo}</b> ${isMe ? '(vous)' : ''} <span style="font-size:10px; color:#888;">(${p.role})</span></span>
+                        </div>
+                        ${(window.isCreator && !isMe) ? `
                             <div style="display:flex; gap:4px;">
-                                <button onclick="moderateUser('${key}', 'promote')" style="font-size:10px; padding:2px 4px;">Promouvoir</button>
-                                <button onclick="moderateUser('${key}', 'kick')" style="font-size:10px; padding:2px 4px; background:var(--danger-color); color:#111;">Kick</button>
-                                <button onclick="moderateUser('${key}', 'ban')" style="font-size:10px; padding:2px 4px; background:#000; color:#fff;">Ban</button>
+                                <button class="icon-btn" onclick="moderateUser('${key}', 'promote')" title="Promouvoir"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button class="icon-btn danger" onclick="moderateUser('${key}', 'kick')" title="Exclure"><i class="fa-solid fa-xmark"></i></button>
+                                <button class="icon-btn danger" onclick="moderateUser('${key}', 'ban')" title="Bannir"><i class="fa-solid fa-ban"></i></button>
                             </div>
                         ` : ''}
                     </div>
@@ -714,21 +1019,14 @@
             list.innerHTML = "";
             let items = [];
             for(let k in actObj) items.push(actObj[k]);
-            items.reverse().slice(0, 20).forEach(item => {
+            items.reverse().slice(0, 15).forEach(item => {
                 list.innerHTML += `<div style="padding:4px; border-bottom:1px solid var(--border-color);"><b>${item.user}</b> ${item.action} <span style="color:#888;">(${item.time})</span></div>`;
             });
         }
 
-        // Exécution Python avec surbrillance rouge permanente de la ligne d'erreur
         async function runCode() {
-            if(!pyodideReady) {
-                alert("Moteur Python en cours de chargement...");
-                return;
-            }
-            if(activeErrorLine !== null) {
-                editor.removeLineClass(activeErrorLine, "background", "error-line-highlight");
-                activeErrorLine = null;
-            }
+            if(!pyodideReady) { showCustomModal("Patientez", "Moteur Python en chargement...", false, () => {}); return; }
+            if(activeErrorLine !== null) { editor.removeLineClass(activeErrorLine, "background", "error-line-highlight"); activeErrorLine = null; }
 
             const code = editor.getValue();
             const outputDiv = document.getElementById('consoleOutput');
@@ -743,14 +1041,39 @@
                 if(stdout === "") outputDiv.innerText = "Exécution terminée avec succès.";
             } catch (err) {
                 let errStr = err.toString();
+                
+                let lineNum = null;
                 let match = errStr.match(/line (\d+)/i) || errStr.match(/File "<exec>", line (\d+)/);
                 if(match && match[1]) {
-                    let lineNum = parseInt(match[1]) - 1;
+                    lineNum = parseInt(match[1]) - 1;
                     activeErrorLine = lineNum;
                     editor.addLineClass(lineNum, "background", "error-line-highlight");
                     editor.setCursor({line: lineNum, ch: 0});
                 }
-                outputDiv.innerText += "\n❌ " + errStr;
+
+                const errorLang = document.getElementById('errorLangSelect').value;
+                let friendlyError = errStr;
+
+                // Mode français court sans aucun texte technique superflu si activé
+                if (errorLang === 'fr') {
+                    let lInfo = lineNum !== null ? `l.${lineNum + 1}` : 'ligne inconnue';
+                    if (errStr.includes("SyntaxError")) {
+                        friendlyError = `Erreur de syntaxe (${lInfo}) : Verifie tes parentheses, tes deux-points ou ton indentation.`;
+                    } else if (errStr.includes("NameError")) {
+                        let varMatch = errStr.match(/name '([^']+)' is not defined/);
+                        let varName = varMatch ? varMatch[1] : '';
+                        friendlyError = `Erreur de nom (${lInfo}) : La variable ou fonction '${varName}' n'est pas definie.`;
+                    } else if (errStr.includes("TypeError")) {
+                        friendlyError = `Erreur de type (${lInfo}) : Operation ou fonction incompatible avec ce type de donnees.`;
+                    } else if (errStr.includes("IndentationError")) {
+                        friendlyError = `Erreur d'indentation (${lInfo}) : Verifie tes espaces ou tabulations.`;
+                    } else if (errStr.includes("ZeroDivisionError")) {
+                        friendlyError = `Erreur mathématique (${lInfo}) : Division par zero impossible.`;
+                    }
+                    outputDiv.innerText = `${friendlyError}`;
+                } else {
+                    outputDiv.innerText += `\n${errStr}`;
+                }
             }
 
             if(document.getElementById('execMode').value === 'collective' && window.firebaseDB) {
@@ -767,22 +1090,28 @@
             }
         }
 
+        // Gestion des 2 onglets principaux (Projet et Chat)
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if(tabName === 'collab') { document.querySelectorAll('.tab-btn')[0].classList.add('active'); document.getElementById('tab-collab').classList.add('active'); }
-            else if(tabName === 'users') { document.querySelectorAll('.tab-btn')[1].classList.add('active'); document.getElementById('tab-users').classList.add('active'); }
-            else if(tabName === 'history') { document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-history').classList.add('active'); }
-            else { document.querySelectorAll('.tab-btn')[3].classList.add('active'); document.getElementById('tab-comments').classList.add('active'); }
+            if(tabName === 'collab') { 
+                document.querySelectorAll('.tab-btn')[0].classList.add('active'); 
+                document.getElementById('tab-collab').classList.add('active'); 
+            } else { 
+                document.querySelectorAll('.tab-btn')[1].classList.add('active'); 
+                document.getElementById('tab-comments').classList.add('active'); 
+            }
         }
 
         function addComment() {
             const input = document.getElementById('newCommentInput');
             if(!input.value.trim() || !window.firebaseDB) return;
             const { db, ref, push, projectId } = window.firebaseDB;
+            let avatar = window.currentUser ? window.currentUser.avatar : '';
             push(ref(db, 'projects/' + projectId + '/comments'), {
                 text: input.value,
                 author: window.currentUser ? window.currentUser.pseudo : 'Anonyme',
+                avatar: avatar,
                 time: new Date().toLocaleTimeString()
             });
             input.value = "";
@@ -793,7 +1122,22 @@
             list.innerHTML = "";
             for(let key in commentsObj) {
                 let c = commentsObj[key];
-                list.innerHTML += `<div class="comment-box"><b>${c.author}</b> (${c.time})<br>${c.text}</div>`;
+                let avatarHTML = '';
+                if(c.avatar) {
+                    avatarHTML = `<div class="avatar" style="width:22px; height:22px; font-size:10px;"><img src="${c.avatar}" alt="Avatar"></div>`;
+                } else {
+                    let initial = c.author ? c.author.charAt(0) : '?';
+                    avatarHTML = `<div class="avatar" style="width:22px; height:22px; font-size:10px;">${initial}</div>`;
+                }
+
+                list.innerHTML += `
+                    <div class="comment-box">
+                        <div class="comment-header">
+                            ${avatarHTML}
+                            <b>${c.author}</b> <span style="color:#888; font-size:10px;">(${c.time})</span>
+                        </div>
+                        <div style="padding-left: 30px; word-break: break-word;">${c.text}</div>
+                    </div>`;
             }
         }
 
@@ -817,7 +1161,32 @@
 
         function shareProject() {
             const url = `${window.location.origin}${window.location.pathname}?project=${window.firebaseDB.projectId}`;
-            showCustomModal("Partager le lien", url, true, () => {});
+            const l = getLang();
+            
+            document.getElementById('customModalTitle').innerText = dict[l].shareTitle;
+            document.getElementById('customModalText').innerHTML = `
+                ${dict[l].shareSub}<br><br>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="text" id="shareLinkInput" value="${url}" readonly style="font-size:11px;">
+                    <button class="primary" onclick="navigator.clipboard.writeText('${url}'); alert('${dict[l].linkCopied}');" style="padding:6px 10px;"><i class="fa-solid fa-copy"></i></button>
+                </div>`;
+            document.getElementById('customModalInput').style.display = 'none';
+            document.getElementById('customModalCancel').style.display = 'none';
+            document.getElementById('customModal').style.display = 'flex';
+            modalCallback = () => {};
+        }
+
+        function exportPython() {
+            const code = editor.getValue();
+            const projectName = document.getElementById('projectNameInput').value || "projet_python";
+            const sanitizedName = projectName.replace(/[^a-zA-Z0-9_-]/g, "_");
+            const blob = new Blob([code], { type: 'text/x-python;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = sanitizedName + '.py';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
@@ -827,11 +1196,17 @@
             const theme = document.getElementById('themeSelect').value;
             if(theme === 'light') { document.body.setAttribute('data-theme', 'light'); editor.setOption('theme', 'eclipse'); }
             else if(theme === 'monokai') { document.body.setAttribute('data-theme', 'dark'); editor.setOption('theme', 'monokai'); }
+            else if(theme === 'material') { document.body.setAttribute('data-theme', 'dark'); editor.setOption('theme', 'material'); }
+            else if(theme === 'nord') { document.body.setAttribute('data-theme', 'dark'); editor.setOption('theme', 'nord'); }
             else { document.body.setAttribute('data-theme', 'dark'); editor.setOption('theme', 'dracula'); }
         }
         function updateFont() { document.documentElement.style.setProperty('--font-family', document.getElementById('fontSelect').value); editor.refresh(); }
         function updateFontSize() { document.documentElement.style.setProperty('--font-size', document.getElementById('fontSizeSelect').value); editor.refresh(); }
-        function changeExecMode() {}
+        function updateLineHeight() { document.documentElement.style.setProperty('--line-height', document.getElementById('lineHeightSelect').value); editor.refresh(); }
+        function updateLineNumbers() {
+            const show = document.getElementById('lineNumSelect').value === 'yes';
+            editor.setOption('lineNumbers', show);
+        }
     </script>
 </body>
 </html>
