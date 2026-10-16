@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Cloud Studio - Thonny Web Edition</title>
+    <!-- CodeMirror pour l'éditeur de code puissant -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Pyodide pour l'exécution Python dans le navigateur -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <style>
+        :root {
+            --bg-primary: #1e1e2e;
+            --bg-secondary: #252538;
+            --bg-tertiary: #313146;
+            --text-color: #cdd6f4;
+            --accent-color: #89b4fa;
+            --accent-hover: #b4befe;
+            --border-color: #45475a;
+            --success-color: #a6e3a1;
+            --danger-color: #f38ba8;
+            --font-family: 'Consolas', 'Courier New', monospace;
+            --font-size: 14px;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #e9ecef;
+            --bg-tertiary: #dee2e6;
+            --text-color: #212529;
+            --accent-color: #0d6efd;
+            --accent-hover: #0b5ed7;
+            --border-color: #ced4da;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: var(--font-size);
+        }
+
+        /* Barre d'outils supérieure */
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button, select {
+            background-color: var(--bg-tertiary);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        button:hover, select:hover {
+            background-color: var(--border-color);
+        }
+
+        button.primary {
+            background-color: var(--accent-color);
+            color: #11111b;
+            font-weight: bold;
+            border: none;
+        }
+
+        button.primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Interface principale */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .sidebar-right {
+            width: 320px;
+            background-color: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .CodeMirror {
+            flex: 1;
+            height: auto !important;
+            font-family: var(--font-family) !important;
+            font-size: var(--font-size) !important;
+        }
+
+        /* Console d'exécution */
+        .console-section {
+            height: 220px;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .console-header {
+            padding: 6px 12px;
+            background-color: var(--bg-tertiary);
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-output {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            font-family: var(--font-family);
+            font-size: 13px;
+            white-space: pre-wrap;
+            background-color: rgba(0,0,0,0.1);
+        }
+
+        /* Panneau latéral (Commentaires & Collaboration) */
+        .panel-tabs {
+            display: flex;
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            background: none;
+            border: none;
+            border-radius: 0;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid var(--accent-color);
+            background-color: var(--bg-secondary);
+        }
+
+        .tab-content {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Commentaires */
+        .comment-box {
+            background-color: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .comment-input-area {
+            display: flex;
+            gap: 5px;
+            margin-top: auto;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* Modal des paramètres */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 8px;
+            width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: var(--accent-color);
+            color: #111;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <!-- Barre d'outils -->
+    <header>
+        <div class="toolbar-group">
+            <h3><i class="fa-solid fa-code"></i> Python Studio</h3>
+            <button class="primary" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
+            <select id="execMode" onchange="changeExecMode()">
+                <option value="individual">Mode Individuel</option>
+                <option value="collective">Mode Collectif (Synchro)</option>
+            </select>
+        </div>
+        <div class="toolbar-group">
+            <span id="roleBadge" class="badge">Éditeur</span>
+            <button onclick="shareProject()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
+            <button onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
+        </div>
+    </header>
+
+    <!-- Contenu Principal -->
+    <div class="main-container">
+        <!-- Éditeur et Console -->
+        <div class="editor-section">
+            <textarea id="codeEditor"></textarea>
+            <div class="console-section">
+                <div class="console-header">
+                    <span><i class="fa-solid fa-terminal"></i> Console Python</span>
+                    <button onclick="clearConsole()" style="padding: 2px 6px; font-size:11px;">Effacer</button>
+                </div>
+                <div id="consoleOutput" class="console-output">Initialisation de Pyodide (Python Web)... Attendez...</div>
+            </div>
+        </div>
+
+        <!-- Panneau latéral (Collaboration & Commentaires) -->
+        <div class="sidebar-right">
+            <div class="panel-tabs">
+                <button class="tab-btn active" onclick="switchTab('collab')">Projet</button>
+                <button class="tab-btn" onclick="switchTab('comments')">Commentaires (<span id="commentCount">0</span>)</button>
+            </div>
+
+            <!-- Onglet Projet & Partage -->
+            <div id="tab-collab" class="tab-content active">
+                <div class="form-group">
+                    <label>ID du Projet :</label>
+                    <input type="text" id="projectIdInput" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Statut de Connexion :</label>
+                    <span id="syncStatus" style="color: var(--success-color); font-size: 13px;"><i class="fa-solid fa-circle-check"></i> Connecté en direct</span>
+                </div>
+                <p style="font-size: 12px; color: #888;">Partagez le lien avec vos amis en mode Lecteur ou Éditeur pour coder en même temps.</p>
+            </div>
+
+            <!-- Onglet Commentaires -->
+            <div id="tab-comments" class="tab-content">
+                <div id="commentsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                    <!-- Commentaires injectés ici -->
+                </div>
+                <div class="comment-input-area">
+                    <input type="text" id="newCommentInput" placeholder="Ajouter un commentaire...">
+                    <button onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Paramètres -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fa-solid fa-gear"></i> Paramètres & Personnalisation</h3>
+            <div class="form-group">
+                <label>Thème :</label>
+                <select id="themeSelect" onchange="updateTheme()">
+                    <option value="dark">Sombre (Dracula)</option>
+                    <option value="light">Clair (Eclipse)</option>
+                    <option value="monokai">Monokai</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Police :</label>
+                <select id="fontSelect" onchange="updateFont()">
+                    <option value="Consolas, monospace">Consolas</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="'Fira Code', monospace">Fira Code</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Taille de police :</label>
+                <select id="fontSizeSelect" onchange="updateFontSize()">
+                    <option value="12px">12px</option>
+                    <option value="14px" selected>14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="translateErrorsToggle"> Traduire les erreurs Python en Français (IA/Règles)
+                </label>
+            </div>
+            <button class="primary" onclick="closeSettings()" style="align-self: flex-end;">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Scripts CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
+
+    <!-- Firebase SDK (Realtime Database connectée) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            databaseURL: "https://python-7c55e-default-rtdb.europe-west1.firebasedatabase.app/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Gestion des paramètres URL et Projet
+        const urlParams = new URLSearchParams(window.location.search);
+        let projectId = urlParams.get('project') || 'projet_' + Math.random().toString(36).substring(2, 8);
+        let userRole = urlParams.get('role') || 'editor'; // 'editor' ou 'reader'
+
+        document.getElementById('projectIdInput').value = projectId;
+        if(userRole === 'reader') {
+            document.getElementById('roleBadgeinnerText').innerText = "Lecteur";
+            document.getElementById('roleBadge').style.backgroundColor = "var(--danger-color)";
+        }
+
+        window.firebaseDB = { db, ref, set, onValue, push, update, projectId, userRole };
+        window.initFirebaseSync();
+    </script>
+
+    <script>
+        let pyodideReady = false;
+        let pyodideInstance = null;
+        let editor = null;
+        let isRemoteUpdate = false;
+
+        // Initialisation de l'éditeur CodeMirror
+        window.addEventListener('DOMContentLoaded', async () => {
+            editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+                mode: "python",
+                theme: "dracula",
+                lineNumbers: true,
+                autoCloseBrackets: true,
+                indentUnit: 4,
+                lineWrapping: true,
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Tab": (cm) => {
+                        if (cm.somethingSelected()) {
+                            cm.indentSelection("add");
+                        } else {
+                            cm.replaceSelection("    ", "end");
+                        }
+                    }
+                }
+            });
+
+            // Suggestions automatiques intelligentes de fin de code / mots clés Python
+            const pythonKeywords = ['def ', 'class ', 'import ', 'from ', 'return ', 'print(', 'if ', 'elif:', 'else:', 'for ', 'in ', 'while ', 'try:', 'except:', 'with open(', 'True', 'False', 'None', 'lambda '];
+            editor.on('inputRead', (cm, change) => {
+                if (change.origin === '+input' && /^[a-zA-Z]$/.test(change.text[0])) {
+                    let cur = cm.getCursor();
+                    let token = cm.getTokenAt(cur);
+                    if (token.string.length >= 2) {
+                        CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                    }
+                }
+            });
+
+            // Écoute des changements locaux pour synchronisation en direct
+            editor.on('change', (cm, change) => {
+                if(isRemoteUpdate) return;
+                if(window.firebaseDB && window.firebaseDB.userRole === 'reader') {
+                    // Empêcher la modification si lecteur
+                    return;
+                }
+                syncCodeToCloud(cm.getValue());
+            });
+
+            // Initialisation de Python (Pyodide)
+            try {
+                pyodideInstance = await loadPyodide();
+                pyodideReady = true;
+                document.getElementById('consoleOutput').innerText = "Environnement Python prêt (Pyodide v0.25.0).\nCliquez sur 'Exécuter' pour tester votre code.";
+            } catch (err) {
+                document.getElementById('consoleOutput').innerText = "Erreur de chargement de Pyodide : " + err;
+            }
+        });
+
+        // Synchronisation Firebase Cloud
+        window.initFirebaseSync = function() {
+            const { db, ref, onValue, projectId, userRole } = window.firebaseDB;
+            const projectRef = ref(db, 'projects/' + projectId);
+
+            onValue(projectRef, (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    if(data.code && data.code !== editor.getValue()) {
+                        isRemoteUpdate = true;
+                        let cursor = editor.getCursor();
+                        editor.setValue(data.code);
+                        editor.setCursor(cursor);
+                        isRemoteUpdate = false;
+                    }
+                    if(data.output && document.getElementById('execMode').value === 'collective') {
+                        document.getElementById('consoleOutput').innerText = data.output;
+                    }
+                    if(data.comments) {
+                        renderComments(data.comments);
+                    }
+                }
+            });
+
+            if(userRole === 'reader') {
+                editor.setOption('readOnly', true);
+            }
+        }
+
+        function syncCodeToCloud(code) {
+            if(!window.firebaseDB) return;
+            const { db, ref, update, projectId } = window.firebaseDB;
+            update(ref(db, 'projects/' + projectId), { code: code });
+        }
+
+        // Exécution du code Python
+        async function runCode() {
+            if(!pyodideReady) {
+                alert("L'environnement Python n'est pas encore totalement chargé.");
+                return;
+            }
+            const code = editor.getValue();
+            const outputDiv = document.getElementById('consoleOutput');
+            outputDiv.innerText = "Exécution en cours...\n";
+
+            // Redirection de la sortie standard Python (stdout)
+            let stdout = "";
+            pyodideInstance.setStdout({ batched: (msg) => { stdout += msg + "\n"; outputDiv.innerText = stdout; } });
+            pyodideInstance.setStderr({ batched: (msg) => { stdout += "[Erreur] " + msg + "\n"; outputDiv.innerText = stdout; } });
+
+            try {
+                await pyodideInstance.runPythonAsync(code);
+                if(stdout === "") outputDiv.innerText = "Exécution terminée avec succès (aucune sortie print).";
+            } catch (err) {
+                let errorMessage = err.toString();
+                if(document.getElementById('translateErrorsToggle').checked) {
+                    errorMessage = translatePythonError(errorMessage);
+                }
+                outputDiv.innerText += "\n" + errorMessage;
+            }
+
+            // Si mode collectif, synchroniser la console
+            if(document.getElementById('execMode').value === 'collective' && window.firebaseDB) {
+                const { db, ref, update, projectId } = window.firebaseDB;
+                update(ref(db, 'projects/' + projectId), { output: outputDiv.innerText });
+            }
+        }
+
+        // Traduction française des erreurs Python courantes
+        function translatePythonError(errorStr) {
+            if(errorStr.includes("SyntaxError")) return "[Traduction FR] Erreur de syntaxe : Vérifiez vos parenthèses, deux-points ou guillemets oubliés.";
+            if(errorStr.includes("NameError")) return "[Traduction FR] Erreur de nom : Vous utilisez une variable ou une fonction qui n'a pas été définie ou mal orthographiée.";
+            if(errorStr.includes("TypeError")) return "[Traduction FR] Erreur de type : Opération incompatible entre des types de données différents (ex: additionner du texte et un nombre).";
+            if(errorStr.includes("IndentationError")) return "[Traduction FR] Erreur d'indentation : Problème d'espaces ou de tabulations au début de la ligne.";
+            if(errorStr.includes("ZeroDivisionError")) return "[Traduction FR] Erreur mathématique : Division par zéro impossible.";
+            if(errorStr.includes("IndexError")) return "[Traduction FR] Erreur d'index : Vous essayez d'accéder à un élément d'une liste qui n'existe pas.";
+            return "[Traduction FR] " + errorStr;
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleOutput').innerText = "";
+        }
+
+        // Gestion des onglets du panneau latéral
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if(tabName === 'collab') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-collab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-comments').classList.add('active');
+            }
+        }
+
+        // Système de commentaires
+        function addComment() {
+            const input = document.getElementById('newCommentInput');
+            if(!input.value.trim() || !window.firebaseDB) return;
+            const { db, ref, push, projectId } = window.firebaseDB;
+            push(ref(db, 'projects/' + projectId + '/comments'), {
+                text: input.value,
+                author: userRole === 'editor' ? 'Éditeur' : 'Lecteur',
+                time: new Date().toLocaleTimeString()
+            });
+            input.value = "";
+        }
+
+        function renderComments(commentsObj) {
+            const list = document.getElementById('commentsList');
+            list.innerHTML = "";
+            let count = 0;
+            for(let key in commentsObj) {
+                let c = commentsObj[key];
+                count++;
+                list.innerHTML += `<div class="comment-box"><b>${c.author}</b> (${c.time})<br>${c.text}</div>`;
+            }
+            document.getElementById('commentCount').innerText = count;
+        }
+
+        // Partage du lien avec options Lecteur / Éditeur
+        function shareProject() {
+            const mode = confirm("Voulez-vous partager ce projet en mode ÉDITEUR ?\n(Cliquez sur Annuler pour un partage en mode LECTEUR avec commentaires)") ? "editor" : "reader";
+            const shareUrl = `${window.location.origin}${window.location.pathname}?project=${window.firebaseDB.projectId}&role=${mode}`;
+            prompt("Copiez ce lien de partage :", shareUrl);
+        }
+
+        // Paramètres et Personnalisation
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+        function updateTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            if(theme === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+                editor.setOption('theme', 'eclipse');
+            } else if(theme === 'monokai') {
+                document.body.setAttribute('data-theme', 'dark');
+                editor.setOption('theme', 'monokai');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                editor.setOption('theme', 'dracula');
+            }
+        }
+        function updateFont() {
+            const font = document.getElementById('fontSelect').value;
+            document.documentElement.style.setProperty('--font-family', font);
+            editor.refresh();
+        }
+        function updateFontSize() {
+            const size = document.getElementById('fontSizeSelect').value;
+            document.documentElement.style.setProperty('--font-size', size);
+            editor.refresh();
+        }
+        function changeExecMode() {
+            const mode = document.getElementById('execMode').value;
+            if(mode === 'collective') {
+                alert("Mode Collectif activé : Les résultats de la console sont synchronisés en direct entre tous les participants.");
+            }
+        }
+    </script>
+</body>
+</html>
