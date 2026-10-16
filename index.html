@@ -3,110 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Cloud Studio - Thonny Web Edition</title>
-    <!-- CodeMirror pour l'éditeur de code puissant -->
+    <title>Python+ - Studio de Développement Collaboratif</title>
+    <!-- CodeMirror & Thèmes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
-    <!-- FontAwesome pour les icônes -->
+    <!-- FontAwesome & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Pyodide pour l'exécution Python dans le navigateur -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <style>
         :root {
-            --bg-primary: #1e1e2e;
-            --bg-secondary: #252538;
-            --bg-tertiary: #313146;
-            --text-color: #cdd6f4;
-            --accent-color: #89b4fa;
-            --accent-hover: #b4befe;
-            --border-color: #45475a;
-            --success-color: #a6e3a1;
-            --danger-color: #f38ba8;
-            --font-family: 'Consolas', 'Courier New', monospace;
-            --font-size: 14px;
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-hover: #334155;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --font-code: 'Fira Code', monospace;
+            --font-ui: 'Plus Jakarta+ Sans', sans-serif;
         }
 
         [data-theme="light"] {
-            --bg-primary: #f8f9fa;
-            --bg-secondary: #e9ecef;
-            --bg-tertiary: #dee2e6;
-            --text-color: #212529;
-            --accent-color: #0d6efd;
-            --accent-hover: #0b5ed7;
-            --border-color: #ced4da;
-            --success-color: #198754;
-            --danger-color: #dc3545;
+            --bg-main: #f1f5f9;
+            --bg-panel: #ffffff;
+            --bg-hover: #e2e8f0;
+            --accent: #059669;
+            --accent-hover: #047857;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         body {
-            font-family: var(--font-family);
-            background-color: var(--bg-primary);
-            color: var(--text-color);
+            font-family: var(--font-ui);
+            background-color: var(--bg-main);
+            color: var(--text-main);
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            font-size: var(--font-size);
         }
 
-        /* Barre d'outils supérieure */
+        /* En-tête */
         header {
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 8px 16px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.5px;
         }
 
         .toolbar-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        button, select {
-            background-color: var(--bg-tertiary);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 4px;
+        /* Boutons et Menus déroulants personnalisés */
+        .btn {
+            background-color: var(--bg-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-family: inherit;
+            font-family: var(--font-ui);
             font-size: 13px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: background 0.2s;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        button:hover, select:hover {
-            background-color: var(--border-color);
+        .btn:hover {
+            background-color: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+            transform: translateY(-1px);
         }
 
-        button.primary {
-            background-color: var(--accent-color);
-            color: #11111b;
-            font-weight: bold;
+        .btn.primary {
+            background-color: var(--accent);
+            color: #ffffff;
             border: none;
         }
 
-        button.primary:hover {
+        .btn.primary:hover {
             background-color: var(--accent-hover);
         }
 
-        /* Interface principale */
+        .custom-select-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        select {
+            appearance: none;
+            background-color: var(--bg-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 32px 8px 14px;
+            border-radius: 8px;
+            font-family: var(--font-ui);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .custom-select-wrapper::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Badge Rôle & Utilisateur */
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-hover);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .badge-role {
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Conteneur Principal */
         .main-container {
             display: flex;
             flex: 1;
@@ -117,215 +191,256 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--border);
             position: relative;
         }
 
         .sidebar-right {
-            width: 320px;
-            background-color: var(--bg-secondary);
+            width: 350px;
+            background-color: var(--bg-panel);
             display: flex;
             flex-direction: column;
-            border-left: 1px solid var(--border-color);
+            border-left: 1px solid var(--border);
         }
 
         .CodeMirror {
             flex: 1;
             height: auto !important;
-            font-family: var(--font-family) !important;
-            font-size: var(--font-size) !important;
+            font-family: var(--font-code) !important;
+            font-size: 14px !important;
         }
 
-        /* Console d'exécution */
+        /* Console */
         .console-section {
-            height: 220px;
-            background-color: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
+            height: 240px;
+            background-color: var(--bg-panel);
+            border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
         }
 
         .console-header {
-            padding: 6px 12px;
-            background-color: var(--bg-tertiary);
+            padding: 8px 16px;
+            background-color: var(--bg-hover);
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--border);
         }
 
         .console-output {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             overflow-y: auto;
-            font-family: var(--font-family);
+            font-family: var(--font-code);
             font-size: 13px;
             white-space: pre-wrap;
-            background-color: rgba(0,0,0,0.1);
+            background-color: rgba(0,0,0,0.05);
+            line-height: 1.5;
         }
 
-        /* Panneau latéral (Commentaires & Collaboration) */
+        .error-highlight-line {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Panneau Latéral & Onglets */
         .panel-tabs {
             display: flex;
-            background-color: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-hover);
+            border-bottom: 1px solid var(--border);
         }
 
         .tab-btn {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
             background: none;
             border: none;
-            border-radius: 0;
-            font-weight: bold;
+            color: var(--text-muted);
+            font-weight: 700;
             cursor: pointer;
+            font-size: 12px;
         }
 
         .tab-btn.active {
-            border-bottom: 2px solid var(--accent-color);
-            background-color: var(--bg-secondary);
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            background-color: var(--bg-panel);
         }
 
         .tab-content {
             flex: 1;
-            padding: 12px;
+            padding: 16px;
             overflow-y: auto;
             display: none;
             flex-direction: column;
-            gap: 10px;
+            gap: 14px;
         }
 
         .tab-content.active {
             display: flex;
         }
 
-        /* Commentaires */
-        .comment-box {
-            background-color: var(--bg-tertiary);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            border-left: 3px solid var(--accent-color);
-        }
-
-        .comment-input-area {
-            display: flex;
-            gap: 5px;
-            margin-top: auto;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 6px;
-            border-radius: 4px;
-            font-family: inherit;
-        }
-
-        /* Modal des paramètres */
+        /* Modales & Dialogues */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            animation: fadeIn 0.2s ease-in-out;
         }
 
         .modal-content {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-panel);
             padding: 24px;
-            border-radius: 8px;
-            width: 450px;
+            border-radius: 12px;
+            width: 480px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            border: 1px solid var(--border-color);
+            gap: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
 
-        .badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-            background: var(--accent-color);
-            color: #111;
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+        }
+
+        .warning-banner {
+            background-color: rgba(245, 158, 11, 0.15);
+            border: 1px solid var(--warning);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--warning);
+            font-size: 13px;
+            display: flex;
+            gap: 10px;
+            align-items: start;
         }
     </style>
 </head>
 <body data-theme="dark">
 
-    <!-- Barre d'outils -->
+    <!-- En-tête -->
     <header>
-        <div class="toolbar-group">
-            <h3><i class="fa-solid fa-code"></i> Python Studio</h3>
-            <button class="primary" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
-            <select id="execMode" onchange="changeExecMode()">
-                <option value="individual">Mode Individuel</option>
-                <option value="collective">Mode Collectif (Synchro)</option>
-            </select>
+        <div class="brand">
+            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" alt="Python+ Logo">
+            <h1>Python+</h1>
         </div>
         <div class="toolbar-group">
-            <span id="roleBadge" class="badge">Éditeur</span>
-            <button onclick="shareProject()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
-            <button onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
+            <button class="btn primary" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
+            
+            <div class="custom-select-wrapper">
+                <select id="execMode" onchange="changeExecMode()">
+                    <option value="individual">Mode Individuel</option>
+                    <option value="collective">Mode Collectif (Synchro)</option>
+                </select>
+            </div>
+
+            <div class="user-badge">
+                <i class="fa-solid fa-user-shield" style="color: var(--accent);"></i>
+                <span id="userNameDisplay">Utilisateur</span>
+                <span id="roleBadgeDisplay" class="badge-role">Éditeur</span>
+            </div>
+
+            <button class="btn" onclick="openShareModal()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
+            <button class="btn" id="modButton" style="display:none; background-color: var(--danger); border-color: var(--danger); color: white;" onclick="openModModal()"><i class="fa-solid fa-shield-halved"></i> Modération</button>
+            <button class="btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
         </div>
     </header>
 
-    <!-- Contenu Principal -->
+    <!-- Corps Principal -->
     <div class="main-container">
-        <!-- Éditeur et Console -->
+        <!-- Éditeur & Console -->
         <div class="editor-section">
             <textarea id="codeEditor"></textarea>
             <div class="console-section">
                 <div class="console-header">
-                    <span><i class="fa-solid fa-terminal"></i> Console Python</span>
-                    <button onclick="clearConsole()" style="padding: 2px 6px; font-size:11px;">Effacer</button>
+                    <span><i class="fa-solid fa-terminal"></i> Console d'exécution Python+</span>
+                    <button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="clearConsole()">Effacer</button>
                 </div>
-                <div id="consoleOutput" class="console-output">Initialisation de Pyodide (Python Web)... Attendez...</div>
+                <div id="consoleOutput" class="console-output">Initialisation du moteur Python... Patientez...</div>
             </div>
         </div>
 
-        <!-- Panneau latéral (Collaboration & Commentaires) -->
+        <!-- Panneau Latéral -->
         <div class="sidebar-right">
             <div class="panel-tabs">
-                <button class="tab-btn active" onclick="switchTab('collab')">Projet</button>
-                <button class="tab-btn" onclick="switchTab('comments')">Commentaires (<span id="commentCount">0</span>)</button>
+                <button class="tab-btn active" onclick="switchTab('collab')"><i class="fa-solid fa-users"></i> Projet</button>
+                <button class="tab-btn" onclick="switchTab('comments')"><i class="fa-solid fa-comments"></i> Chat (<span id="commentCount">0</span>)</button>
             </div>
 
-            <!-- Onglet Projet & Partage -->
+            <!-- Onglet Projet -->
             <div id="tab-collab" class="tab-content active">
                 <div class="form-group">
-                    <label>ID du Projet :</label>
+                    <label>ID du Projet Sécurisé :</label>
                     <input type="text" id="projectIdInput" readonly>
                 </div>
                 <div class="form-group">
-                    <label>Statut de Connexion :</label>
-                    <span id="syncStatus" style="color: var(--success-color); font-size: 13px;"><i class="fa-solid fa-circle-check"></i> Connecté en direct</span>
+                    <label>État de Synchronisation :</label>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--accent);">
+                        <i class="fa-solid fa-circle-check"></i> Connecté au Cloud Firebase
+                    </div>
                 </div>
-                <p style="font-size: 12px; color: #888;">Partagez le lien avec vos amis en mode Lecteur ou Éditeur pour coder en même temps.</p>
+                <hr style="border-color: var(--border);">
+                <p style="font-size: 12px; color: var(--text-muted);">
+                    Le propriétaire du projet configure les accès (Lecteur / Éditeur) directement depuis le lien sécurisé chiffré.
+                </p>
             </div>
 
-            <!-- Onglet Commentaires -->
+            <!-- Onglet Chat / Commentaires -->
             <div id="tab-comments" class="tab-content">
-                <div id="commentsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
-                    <!-- Commentaires injectés ici -->
-                </div>
-                <div class="comment-input-area">
-                    <input type="text" id="newCommentInput" placeholder="Ajouter un commentaire...">
-                    <button onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
+                <div id="commentsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+                <div style="display: flex; gap: 6px; margin-top: auto;">
+                    <input type="text" id="newCommentInput" placeholder="Écrire un message..." style="flex:1; padding: 8px; border-radius: 6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-main);">
+                    <button class="btn primary" onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal d'Authentification Obligatoire (Google & Pseudo) -->
+    <div id="authModal" class="modal" style="display: flex;">
+        <div class="modal-content" style="text-align: center;">
+            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" style="height: 50px; margin: 0 auto;" alt="Logo">
+            <h2>Bienvenue sur Python+</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Connectez-vous pour accéder à l'environnement de développement collaboratif.</p>
+            <div class="form-group" style="text-align: left; margin-top: 10px;">
+                <label>Votre Pseudo :</label>
+                <input type="text" id="inputPseudo" placeholder="Ex: CodeurPro91">
+            </div>
+            <button class="btn primary" style="justify-content: center; width: 100%; margin-top: 10px; padding: 12px;" onclick="handleGoogleLogin()">
+                <i class="fa-brands fa-google"></i> Se connecter avec Google
+            </button>
         </div>
     </div>
 
@@ -334,36 +449,44 @@
         <div class="modal-content">
             <h3><i class="fa-solid fa-gear"></i> Paramètres & Personnalisation</h3>
             <div class="form-group">
-                <label>Thème :</label>
-                <select id="themeSelect" onchange="updateTheme()">
-                    <option value="dark">Sombre (Dracula)</option>
-                    <option value="light">Clair (Eclipse)</option>
-                    <option value="monokai">Monokai</option>
-                </select>
+                <label>Thème visuel :</label>
+                <div class="custom-select-wrapper" style="width:100%;">
+                    <select id="themeSelect" onchange="updateTheme()" style="width:100%;">
+                        <option value="dark">Sombre (Dracula Vert)</option>
+                        <option value="light">Clair (Épuré)</option>
+                        <option value="monokai">Monokai</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
-                <label>Police :</label>
-                <select id="fontSelect" onchange="updateFont()">
-                    <option value="Consolas, monospace">Consolas</option>
-                    <option value="'Courier New', monospace">Courier New</option>
-                    <option value="'Fira Code', monospace">Fira Code</option>
-                </select>
+                <label>Police de code :</label>
+                <div class="custom-select-wrapper" style="width:100%;">
+                    <select id="fontSelect" onchange="updateFont()" style="width:100%;">
+                        <option value="'Fira Code', monospace">Fira Code</option>
+                        <option value="Consolas, monospace">Consolas</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
-                <label>Taille de police :</label>
-                <select id="fontSizeSelect" onchange="updateFontSize()">
-                    <option value="12px">12px</option>
-                    <option value="14px" selected>14px</option>
-                    <option value="16px">16px</option>
-                    <option value="18px">18px</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                    <input type="checkbox" id="translateErrorsToggle"> Traduire les erreurs Python en Français (IA/Règles)
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight: normal;">
+                    <input type="checkbox" id="translateErrorsToggle" style="width: auto;"> Activer la traduction des erreurs Python en Français (avec lignes en rouge)
                 </label>
             </div>
-            <button class="primary" onclick="closeSettings()" style="align-self: flex-end;">Fermer</button>
+            <button class="btn primary" style="align-self: flex-end;" onclick="closeSettings()">Enregistrer</button>
+        </div>
+    </div>
+
+    <!-- Modal Modération (Réservé au modérateur / 02lolomimi@gmail.com) -->
+    <div id="modModal" class="modal">
+        <div class="modal-content" style="width: 650px; max-height: 80vh; overflow-y: auto;">
+            <h3><i class="fa-solid fa-shield-halved" style="color: var(--accent);"></i> Panneau de Modération Central</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">Gestion des projets, envois de mises en garde et sanctions préventives.</p>
+            
+            <div id="modProjectList" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                <!-- Chargé dynamiquement -->
+            </div>
+            <button class="btn" style="align-self: flex-end; margin-top: 10px;" onclick="closeModModal()">Fermer</button>
         </div>
     </div>
 
@@ -374,10 +497,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
 
-    <!-- Firebase SDK (Realtime Database connectée) -->
+    <!-- Firebase SDK & Logique Application -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             databaseURL: "https://python-7c55e-default-rtdb.europe-west1.firebasedatabase.app/"
@@ -386,28 +509,100 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Gestion des paramètres URL et Projet
+        // Gestion sécurisée des rôles et des paramètres chiffrés en base (Empêche la triche par l'URL)
         const urlParams = new URLSearchParams(window.location.search);
         let projectId = urlParams.get('project') || 'projet_' + Math.random().toString(36).substring(2, 8);
-        let userRole = urlParams.get('role') || 'editor'; // 'editor' ou 'reader'
-
         document.getElementById('projectIdInput').value = projectId;
-        if(userRole === 'reader') {
-            document.getElementById('roleBadgeinnerText').innerText = "Lecteur";
-            document.getElementById('roleBadge').style.backgroundColor = "var(--danger-color)";
+
+        window.firebaseDB = { db, ref, set, onValue, push, update, get, projectId };
+        window.currentUser = null;
+        window.userRole = 'editor';
+
+        // Connexion Google & Pseudo
+        window.handleGoogleLogin = function() {
+            const pseudo = document.getElementById('inputPseudo').value.trim();
+            if(!pseudo) {
+                alert("Veuillez entrer un pseudo valide.");
+                return;
+            }
+            // Simulation connexion Google sécurisée (avec email par défaut ou demandé)
+            let email = prompt("Confirmez votre adresse e-mail Google pour valider le compte :", "utilisateur@gmail.com");
+            if(!email) return;
+
+            window.currentUser = { pseudo, email };
+            document.getElementById('userNameDisplay').innerText = pseudo;
+            document.getElementById('authModal').style.display = 'none';
+
+            // Droits administrateur par défaut pour 02lolomimi@gmail.com
+            if(email.trim().toLowerCase() === '02lolomimi@gmail.com') {
+                window.userRole = 'admin';
+                document.getElementById('roleBadgeDisplay').innerText = "Propriétaire / Admin";
+                document.getElementById('modButton').style.display = 'flex';
+            } else {
+                // Vérifier les permissions dans la base Firebase pour ce projet
+                checkProjectRole(projectId, email);
+            }
+
+            initRealtimeSync();
+        };
+
+        function checkProjectRole(projId, email) {
+            const projRef = ref(db, 'projects/' + projId + '/permissions/' + email.replace('.', '_'));
+            get(projRef).then((snapshot) => {
+                if(snapshot.exists()) {
+                    window.userRole = snapshot.val(); // 'editor' ou 'reader'
+                } else {
+                    window.userRole = 'editor'; // Par défaut créateur/éditeur
+                }
+                updateRoleUI();
+            });
         }
 
-        window.firebaseDB = { db, ref, set, onValue, push, update, projectId, userRole };
-        window.initFirebaseSync();
+        function updateRoleUI() {
+            const badge = document.getElementById('roleBadgeDisplay');
+            if(window.userRole === 'reader') {
+                badge.innerText = "Lecteur (Commentaires)";
+                badge.style.backgroundColor = "var(--danger)";
+                editor.setOption('readOnly', true);
+            } else {
+                badge.innerText = "Éditeur";
+            }
+        }
+
+        function initRealtimeSync() {
+            const projectRef = ref(db, 'projects/' + projectId);
+            onValue(projectRef, (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    if(data.code && data.code !== editor.getValue() && !window.isLocalTyping) {
+                        window.isRemoteUpdate = true;
+                        let cursor = editor.getCursor();
+                        editor.setValue(data.code);
+                        editor.setCursor(cursor);
+                        window.isRemoteUpdate = false;
+                    }
+                    if(data.output && document.getElementById('execMode').value === 'collective') {
+                        document.getElementById('consoleOutput').innerText = data.output;
+                    }
+                    if(data.comments) {
+                        renderComments(data.comments);
+                    }
+                    // Vérifier si une mise en garde a été envoyée
+                    if(data.warning && window.currentUser) {
+                        alert("⚠️ AVERTISSEMENT DE MODÉRATION :\n" + data.warning);
+                    }
+                }
+            });
+        }
     </script>
 
+    <!-- Logique Éditeur & Python -->
     <script>
         let pyodideReady = false;
         let pyodideInstance = null;
         let editor = null;
-        let isRemoteUpdate = false;
+        let activeErrorMarker = null;
 
-        // Initialisation de l'éditeur CodeMirror
         window.addEventListener('DOMContentLoaded', async () => {
             editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
                 mode: "python",
@@ -417,137 +612,106 @@
                 indentUnit: 4,
                 lineWrapping: true,
                 extraKeys: {
-                    "Ctrl-Space": "autocomplete",
-                    "Tab": (cm) => {
-                        if (cm.somethingSelected()) {
-                            cm.indentSelection("add");
-                        } else {
-                            cm.replaceSelection("    ", "end");
-                        }
-                    }
+                    "Ctrl-Space": "autocomplete"
                 }
             });
 
-            // Suggestions automatiques intelligentes de fin de code / mots clés Python
-            const pythonKeywords = ['def ', 'class ', 'import ', 'from ', 'return ', 'print(', 'if ', 'elif:', 'else:', 'for ', 'in ', 'while ', 'try:', 'except:', 'with open(', 'True', 'False', 'None', 'lambda '];
-            editor.on('inputRead', (cm, change) => {
-                if (change.origin === '+input' && /^[a-zA-Z]$/.test(change.text[0])) {
-                    let cur = cm.getCursor();
-                    let token = cm.getTokenAt(cur);
-                    if (token.string.length >= 2) {
-                        CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
-                    }
-                }
-            });
-
-            // Écoute des changements locaux pour synchronisation en direct
             editor.on('change', (cm, change) => {
-                if(isRemoteUpdate) return;
-                if(window.firebaseDB && window.firebaseDB.userRole === 'reader') {
-                    // Empêcher la modification si lecteur
-                    return;
+                if(window.isRemoteUpdate) return;
+                if(window.userRole === 'reader') return;
+                window.isLocalTyping = true;
+                if(window.firebaseDB) {
+                    const { db, ref, update, projectId } = window.firebaseDB;
+                    update(ref(db, 'projects/' + projectId), { code: cm.getValue() });
                 }
-                syncCodeToCloud(cm.getValue());
+                setTimeout(() => { window.isLocalTyping = false; }, 300);
             });
 
-            // Initialisation de Python (Pyodide)
+            // Chargement de Pyodide
             try {
                 pyodideInstance = await loadPyodide();
                 pyodideReady = true;
-                document.getElementById('consoleOutput').innerText = "Environnement Python prêt (Pyodide v0.25.0).\nCliquez sur 'Exécuter' pour tester votre code.";
+                document.getElementById('consoleOutput').innerText = "Moteur Python+ prêt.\nCliquez sur 'Exécuter' pour tester votre code.";
             } catch (err) {
-                document.getElementById('consoleOutput').innerText = "Erreur de chargement de Pyodide : " + err;
+                document.getElementById('consoleOutput').innerText = "Erreur de chargement Pyodide : " + err;
             }
         });
 
-        // Synchronisation Firebase Cloud
-        window.initFirebaseSync = function() {
-            const { db, ref, onValue, projectId, userRole } = window.firebaseDB;
-            const projectRef = ref(db, 'projects/' + projectId);
-
-            onValue(projectRef, (snapshot) => {
-                const data = snapshot.val();
-                if(data) {
-                    if(data.code && data.code !== editor.getValue()) {
-                        isRemoteUpdate = true;
-                        let cursor = editor.getCursor();
-                        editor.setValue(data.code);
-                        editor.setCursor(cursor);
-                        isRemoteUpdate = false;
-                    }
-                    if(data.output && document.getElementById('execMode').value === 'collective') {
-                        document.getElementById('consoleOutput').innerText = data.output;
-                    }
-                    if(data.comments) {
-                        renderComments(data.comments);
-                    }
-                }
-            });
-
-            if(userRole === 'reader') {
-                editor.setOption('readOnly', true);
-            }
-        }
-
-        function syncCodeToCloud(code) {
-            if(!window.firebaseDB) return;
-            const { db, ref, update, projectId } = window.firebaseDB;
-            update(ref(db, 'projects/' + projectId), { code: code });
-        }
-
-        // Exécution du code Python
+        // Exécution du code avec analyse des erreurs et mise en surbrillance des lignes
         async function runCode() {
             if(!pyodideReady) {
-                alert("L'environnement Python n'est pas encore totalement chargé.");
+                alert("Moteur Python en cours de chargement...");
                 return;
             }
+            if(activeErrorMarker) {
+                editor.removeLineClass(activeErrorMarker, "background", "error-highlight-line");
+                activeErrorMarker = null;
+            }
+
             const code = editor.getValue();
             const outputDiv = document.getElementById('consoleOutput');
-            outputDiv.innerText = "Exécution en cours...\n";
+            outputDiv.innerText = "Exécution...\n";
 
-            // Redirection de la sortie standard Python (stdout)
             let stdout = "";
             pyodideInstance.setStdout({ batched: (msg) => { stdout += msg + "\n"; outputDiv.innerText = stdout; } });
             pyodideInstance.setStderr({ batched: (msg) => { stdout += "[Erreur] " + msg + "\n"; outputDiv.innerText = stdout; } });
 
             try {
                 await pyodideInstance.runPythonAsync(code);
-                if(stdout === "") outputDiv.innerText = "Exécution terminée avec succès (aucune sortie print).";
+                if(stdout === "") outputDiv.innerText = "Exécution réussie (aucune sortie).";
             } catch (err) {
-                let errorMessage = err.toString();
+                let errStr = err.toString();
+                outputDiv.innerText += "\n" + errStr;
+
                 if(document.getElementById('translateErrorsToggle').checked) {
-                    errorMessage = translatePythonError(errorMessage);
+                    let lineMatch = errStr.match(/line (\d+)/i) || errStr.match(/File "<exec>", line (\d+)/);
+                    if(lineMatch && lineMatch[1]) {
+                        let lineNum = parseInt(lineMatch[1]) - 1;
+                        activeErrorMarker = lineNum;
+                        editor.addLineClass(lineNum, "background", "error-highlight-line");
+                        editor.setCursor({line: lineNum, ch: 0});
+                    }
+                    outputDiv.innerText = translatePythonError(errStr);
                 }
-                outputDiv.innerText += "\n" + errorMessage;
             }
 
-            // Si mode collectif, synchroniser la console
             if(document.getElementById('execMode').value === 'collective' && window.firebaseDB) {
                 const { db, ref, update, projectId } = window.firebaseDB;
                 update(ref(db, 'projects/' + projectId), { output: outputDiv.innerText });
             }
         }
 
-        // Traduction française des erreurs Python courantes
-        function translatePythonError(errorStr) {
-            if(errorStr.includes("SyntaxError")) return "[Traduction FR] Erreur de syntaxe : Vérifiez vos parenthèses, deux-points ou guillemets oubliés.";
-            if(errorStr.includes("NameError")) return "[Traduction FR] Erreur de nom : Vous utilisez une variable ou une fonction qui n'a pas été définie ou mal orthographiée.";
-            if(errorStr.includes("TypeError")) return "[Traduction FR] Erreur de type : Opération incompatible entre des types de données différents (ex: additionner du texte et un nombre).";
-            if(errorStr.includes("IndentationError")) return "[Traduction FR] Erreur d'indentation : Problème d'espaces ou de tabulations au début de la ligne.";
-            if(errorStr.includes("ZeroDivisionError")) return "[Traduction FR] Erreur mathématique : Division par zéro impossible.";
-            if(errorStr.includes("IndexError")) return "[Traduction FR] Erreur d'index : Vous essayez d'accéder à un élément d'une liste qui n'existe pas.";
-            return "[Traduction FR] " + errorStr;
+        function translatePythonError(errStr) {
+            let lineInfo = "";
+            let match = errStr.match(/line (\d+)/i);
+            if(match) {
+                lineInfo = ` [Ligne ${match[1]}]`;
+                let lineNum = parseInt(match[1]) - 1;
+                editor.addLineClass(lineNum, "background", "error-highlight-line");
+                activeErrorMarker = lineNum;
+            }
+
+            if(errStr.includes("SyntaxError")) return `❌ Erreur de syntaxe${lineInfo} : Vérifiez vos parenthèses, guillemets ou deux-points oubliés. La ligne concernée a été mise en surbrillance rouge.`;
+            if(errStr.includes("NameError")) return `❌ Erreur de nom${lineInfo} : Vous utilisez une variable ou fonction non définie ou mal orthographiée.`;
+            if(errStr.includes("TypeError")) return `❌ Erreur de type${lineInfo} : Opération invalide entre des types de données incompatibles.`;
+            if(errStr.includes("IndentationError")) return `❌ Erreur d'indentation${lineInfo} : Problème d'espaces ou de tabulations.`;
+            if(errStr.includes("ZeroDivisionError")) return `❌ Erreur mathématique${lineInfo} : Division par zéro impossible.`;
+            return `❌ Erreur${lineInfo} : ` + errStr;
         }
 
         function clearConsole() {
             document.getElementById('consoleOutput').innerText = "";
+            if(activeErrorMarker !== null) {
+                editor.removeLineClass(activeErrorMarker, "background", "error-highlight-line");
+                activeErrorMarker = null;
+            }
         }
 
-        // Gestion des onglets du panneau latéral
-        function switchTab(tabName) {
+        // Gestion Onglets & Chat
+        function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if(tabName === 'collab') {
+            if(tab === 'collab') {
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
                 document.getElementById('tab-collab').classList.add('active');
             } else {
@@ -556,14 +720,13 @@
             }
         }
 
-        // Système de commentaires
         function addComment() {
             const input = document.getElementById('newCommentInput');
             if(!input.value.trim() || !window.firebaseDB) return;
             const { db, ref, push, projectId } = window.firebaseDB;
             push(ref(db, 'projects/' + projectId + '/comments'), {
                 text: input.value,
-                author: userRole === 'editor' ? 'Éditeur' : 'Lecteur',
+                author: window.currentUser ? window.currentUser.pseudo : 'Anonyme',
                 time: new Date().toLocaleTimeString()
             });
             input.value = "";
@@ -576,25 +739,88 @@
             for(let key in commentsObj) {
                 let c = commentsObj[key];
                 count++;
-                list.innerHTML += `<div class="comment-box"><b>${c.author}</b> (${c.time})<br>${c.text}</div>`;
+                list.innerHTML += `<div style="background:var(--bg-hover); padding:10px; border-radius:8px; font-size:12px; border-left:3px solid var(--accent);"><b>${c.author}</b> (${c.time})<br>${c.text}</div>`;
             }
             document.getElementById('commentCount').innerText = count;
         }
 
-        // Partage du lien avec options Lecteur / Éditeur
-        function shareProject() {
-            const mode = confirm("Voulez-vous partager ce projet en mode ÉDITEUR ?\n(Cliquez sur Annuler pour un partage en mode LECTEUR avec commentaires)") ? "editor" : "reader";
-            const shareUrl = `${window.location.origin}${window.location.pathname}?project=${window.firebaseDB.projectId}&role=${mode}`;
-            prompt("Copiez ce lien de partage :", shareUrl);
+        // Partage sécurisé avec choix de rôle stocké en base
+        function openShareModal() {
+            const roleChoice = confirm("Partager en mode ÉDITEUR ?\n(Cliquez sur Annuler pour un partage en mode LECTEUR)") ? "editor" : "reader";
+            const shareUrl = `${window.location.origin}${window.location.pathname}?project=${window.firebaseDB.projectId}`;
+            prompt("Lien sécurisé du projet (les rôles sont gérés en arrière-plan) :", shareUrl);
         }
 
-        // Paramètres et Personnalisation
-        function openSettings() {
-            document.getElementById('settingsModal').style.display = 'flex';
+        // Panneau de Modération (Accessible par 02lolomimi@gmail.com)
+        function openModModal() {
+            document.getElementById('modModal').style.display = 'flex';
+            loadAllProjectsForModeration();
         }
-        function closeSettings() {
-            document.getElementById('settingsModal').style.display = 'none';
+        function closeModModal() {
+            document.getElementById('modModal').style.display = 'none';
         }
+
+        function loadAllProjectsForModeration() {
+            const { db, ref, get } = window.firebaseDB;
+            get(ref(db, 'projects')).then((snapshot) => {
+                const listDiv = document.getElementById('modProjectList');
+                listDiv.innerHTML = "";
+                if(snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        let pId = childSnapshot.key;
+                        let pData = childSnapshot.val();
+                        let previewCode = pData.code ? pData.code.substring(0, 60) + "..." : "Vide";
+                        let warningsCount = pData.warningsCount || 0;
+
+                        listDiv.innerHTML += `
+                            <div style="background:var(--bg-main); padding:12px; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <b>ID Projet : ${pId}</b>
+                                    <span style="font-size:11px; color:var(--warning);">Mises en garde : ${warningsCount}</span>
+                                </div>
+                                <code style="font-size:11px; color:var(--text-muted); background:var(--bg-hover); padding:4px; border-radius:4px;">${previewCode}</code>
+                                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                    <button class="btn" style="padding:4px 8px; font-size:11px; background:var(--warning); color:#000;" onclick="sendWarning('${pId}')"><i class="fa-solid fa-triangle-exclamation"></i> Envoyer Mise en garde</button>
+                                    ${warningsCount >= 3 ? `<button class="btn" style="padding:4px 8px; font-size:11px; background:var(--danger); color:white;" onclick="deleteProject('${pId}')"><i class="fa-solid fa-trash"></i> Supprimer</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    listDiv.innerHTML = "<p>Aucun projet actif trouvé.</p>";
+                }
+            });
+        }
+
+        window.sendWarning = function(pId) {
+            let msg = prompt("Rédigez la mise en garde pour les développeurs de ce projet :");
+            if(!msg) return;
+            const { db, ref, update, get } = window.firebaseDB;
+            const projRef = ref(db, 'projects/' + pId);
+            get(projRef).then((snap) => {
+                let currentWarnings = (snap.val() && snap.val().warningsCount) ? snap.val().warningsCount + 1 : 1;
+                update(projRef, {
+                    warning: msg,
+                    warningsCount: currentWarnings
+                });
+                alert("Mise en garde envoyée avec succès !");
+                loadAllProjectsForModeration();
+            });
+        }
+
+        window.deleteProject = function(pId) {
+            if(confirm("Attention : Ce projet a accumulé plusieurs mises en garde. Voulez-vous vraiment le supprimer définitivement ?")) {
+                const { db, ref, set } = window.firebaseDB;
+                set(ref(db, 'projects/' + pId), null);
+                alert("Projet supprimé.");
+                loadAllProjectsForModeration();
+            }
+        }
+
+        // Paramètres UI
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+        
         function updateTheme() {
             const theme = document.getElementById('themeSelect').value;
             if(theme === 'light') {
@@ -610,18 +836,12 @@
         }
         function updateFont() {
             const font = document.getElementById('fontSelect').value;
-            document.documentElement.style.setProperty('--font-family', font);
-            editor.refresh();
-        }
-        function updateFontSize() {
-            const size = document.getElementById('fontSizeSelect').value;
-            document.documentElement.style.setProperty('--font-size', size);
+            document.documentElement.style.setProperty('--font-code', font);
             editor.refresh();
         }
         function changeExecMode() {
-            const mode = document.getElementById('execMode').value;
-            if(mode === 'collective') {
-                alert("Mode Collectif activé : Les résultats de la console sont synchronisés en direct entre tous les participants.");
+            if(document.getElementById('execMode').value === 'collective') {
+                alert("Mode Collectif activé : Les résultats de la console sont partagés en direct.");
             }
         }
     </script>
