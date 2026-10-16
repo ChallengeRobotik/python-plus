@@ -3,490 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python+ - Studio de Développement Collaboratif</title>
-    <!-- CodeMirror & Thèmes -->
+    <title>Studio Python</title>
+    <!-- CodeMirror pour l'éditeur de code -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
-    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    <!-- FontAwesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Pyodide -->
+    <!-- Google Identity Services (GIS) officiel -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Pyodide pour l'exécution Python dans le navigateur -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <style>
         :root {
-            --bg-main: #0f172a;
-            --bg-panel: #1e293b;
-            --bg-hover: #334155;
-            --accent: #10b981;
-            --accent-hover: #059669;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --font-code: 'Fira Code', monospace;
-            --font-ui: 'Plus Jakarta+ Sans', sans-serif;
+            --bg-primary: #1e1e2e;
+            --bg-secondary: #252538;
+            --bg-tertiary: #313146;
+            --text-color: #cdd6f4;
+            --accent-color: #89b4fa;
+            --accent-hover: #b4befe;
+            --border-color: #45475a;
+            --success-color: #a6e3a1;
+            --danger-color: #f38ba8;
+            --font-family: 'Consolas', 'Courier New', monospace;
+            --font-size: 14px;
         }
 
         [data-theme="light"] {
-            --bg-main: #f1f5f9;
-            --bg-panel: #ffffff;
-            --bg-hover: #e2e8f0;
-            --accent: #059669;
-            --accent-hover: #047857;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #cbd5e1;
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #e9ecef;
+            --bg-tertiary: #dee2e6;
+            --text-color: #212529;
+            --accent-color: #0d6efd;
+            --accent-hover: #0b5ed7;
+            --border-color: #ced4da;
+            --success-color: #198754;
+            --danger-color: #dc3545;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         body {
-            font-family: var(--font-ui);
-            background-color: var(--bg-main);
-            color: var(--text-main);
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-color);
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            font-size: var(--font-size);
         }
 
-        /* En-tête */
+        /* Barre d'outils supérieure */
         header {
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 20px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand img {
-            height: 38px;
-            object-fit: contain;
-        }
-
-        .brand h1 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent);
-            letter-spacing: -0.5px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .toolbar-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        /* Boutons et Menus déroulants personnalisés */
-        .btn {
-            background-color: var(--bg-hover);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 8px 14px;
-            border-radius: 8px;
+        .brand-logo {
+            height: 28px;
+            object-fit: contain;
+        }
+
+        button, select {
+            background-color: var(--bg-tertiary);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            font-family: var(--font-ui);
+            font-family: inherit;
             font-size: 13px;
-            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            gap: 6px;
+            transition: background 0.2s;
         }
 
-        .btn:hover {
-            background-color: var(--accent);
-            color: #ffffff;
-            border-color: var(--accent);
-            transform: translateY(-1px);
+        button:hover, select:hover {
+            background-color: var(--border-color);
         }
 
-        .btn.primary {
-            background-color: var(--accent);
-            color: #ffffff;
+        button.primary {
+            background-color: var(--accent-color);
+            color: #11111b;
+            font-weight: bold;
             border: none;
         }
 
-        .btn.primary:hover {
+        button.primary:hover {
             background-color: var(--accent-hover);
         }
 
-        .custom-select-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        select {
-            appearance: none;
-            background-color: var(--bg-hover);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 8px 32px 8px 14px;
-            border-radius: 8px;
-            font-family: var(--font-ui);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .custom-select-wrapper::after {
-            content: '\f078';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 10px;
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-
-        /* Badge Rôle & Utilisateur */
-        .user-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-hover);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .badge-role {
-            background: var(--accent);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        /* Conteneur Principal */
+        /* Interface principale avec redimensionnement dynamique */
         .main-container {
             display: flex;
             flex: 1;
             overflow: hidden;
+            position: relative;
         }
 
         .editor-section {
             flex: 1;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--border);
+            border-right: 1px solid var(--border-color);
             position: relative;
+            min-width: 250px;
         }
 
+        /* Séparateur redimensionnable vertical (entre éditeur et panneau droit) */
+        .resizer-x {
+            width: 6px;
+            background-color: var(--border-color);
+            cursor: col-resize;
+            z-index: 50;
+        }
+        .resizer-x:hover { background-color: var(--accent-color); }
+
         .sidebar-right {
-            width: 350px;
-            background-color: var(--bg-panel);
+            width: 340px;
+            min-width: 200px;
+            max-width: 600px;
+            background-color: var(--bg-secondary);
             display: flex;
             flex-direction: column;
-            border-left: 1px solid var(--border);
+            border-left: 1px solid var(--border-color);
         }
 
         .CodeMirror {
             flex: 1;
             height: auto !important;
-            font-family: var(--font-code) !important;
-            font-size: 14px !important;
+            font-family: var(--font-family) !important;
+            font-size: var(--font-size) !important;
         }
 
-        /* Console */
+        /* Séparateur redimensionnable horizontal (Console) */
+        .resizer-y {
+            height: 6px;
+            background-color: var(--border-color);
+            cursor: row-resize;
+            z-index: 50;
+        }
+        .resizer-y:hover { background-color: var(--accent-color); }
+
+        /* Console d'exécution */
         .console-section {
-            height: 240px;
-            background-color: var(--bg-panel);
-            border-top: 1px solid var(--border);
+            height: 200px;
+            min-height: 60px;
+            max-height: 500px;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
         }
 
         .console-header {
-            padding: 8px 16px;
-            background-color: var(--bg-hover);
+            padding: 6px 12px;
+            background-color: var(--bg-tertiary);
             font-size: 12px;
-            font-weight: 700;
+            font-weight: bold;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border);
         }
 
         .console-output {
             flex: 1;
-            padding: 12px;
+            padding: 10px;
             overflow-y: auto;
-            font-family: var(--font-code);
+            font-family: var(--font-family);
             font-size: 13px;
             white-space: pre-wrap;
-            background-color: rgba(0,0,0,0.05);
-            line-height: 1.5;
+            background-color: rgba(0,0,0,0.1);
         }
 
-        .error-highlight-line {
-            background-color: rgba(239, 68, 68, 0.2) !important;
-            border-left: 4px solid var(--danger);
+        /* Ligne d'erreur en surbrillance rouge permanente */
+        .error-line-highlight {
+            background-color: rgba(243, 139, 168, 0.3) !important;
+            border-left: 4px solid var(--danger-color);
         }
 
-        /* Panneau Latéral & Onglets */
+        /* Panneau latéral (Commentaires & Collaboration & Participants) */
         .panel-tabs {
             display: flex;
-            background-color: var(--bg-hover);
-            border-bottom: 1px solid var(--border);
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .tab-btn {
             flex: 1;
-            padding: 10px;
+            padding: 8px 4px;
             text-align: center;
             background: none;
             border: none;
-            color: var(--text-muted);
-            font-weight: 700;
+            border-radius: 0;
+            font-weight: bold;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .tab-btn.active {
-            color: var(--accent);
-            border-bottom: 2px solid var(--accent);
-            background-color: var(--bg-panel);
+            border-bottom: 2px solid var(--accent-color);
+            background-color: var(--bg-secondary);
         }
 
         .tab-content {
             flex: 1;
-            padding: 16px;
+            padding: 12px;
             overflow-y: auto;
             display: none;
             flex-direction: column;
-            gap: 14px;
+            gap: 10px;
         }
 
         .tab-content.active {
             display: flex;
         }
 
-        /* Modales & Dialogues */
+        .comment-box {
+            background-color: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .comment-input-area {
+            display: flex;
+            gap: 5px;
+            margin-top: auto;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* Modales personnalisées au milieu de l'écran */
         .modal {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.75);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.2s ease-in-out;
+            z-index: 2000;
         }
 
         .modal-content {
-            background-color: var(--bg-panel);
+            background-color: var(--bg-secondary);
             padding: 24px;
-            border-radius: 12px;
-            width: 480px;
+            border-radius: 8px;
+            width: 440px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            gap: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            text-align: center;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
+            text-align: left;
         }
 
-        .form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
+        .badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: var(--accent-color);
+            color: #111;
         }
 
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 8px;
-            background-color: var(--bg-main);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            font-family: var(--font-ui);
-        }
-
-        .warning-banner {
-            background-color: rgba(245, 158, 11, 0.15);
-            border: 1px solid var(--warning);
-            padding: 12px;
-            border-radius: 8px;
-            color: var(--warning);
-            font-size: 13px;
+        .user-item {
             display: flex;
-            gap: 10px;
-            align-items: start;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-tertiary);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
         }
     </style>
 </head>
 <body data-theme="dark">
 
-    <!-- En-tête -->
+    <!-- Blocage de l'outil Inspecter & Raccourcis -->
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+                e.preventDefault();
+                alert("Inspection interdite.");
+                return false;
+            }
+        });
+    </script>
+
+    <!-- Modale Connexion Google Officielle GIS (Au milieu de l'écran) -->
+    <div id="googleAuthModal" class="modal">
+        <div class="modal-content">
+            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" class="brand-logo" style="height: 40px; margin: 0 auto;" alt="Logo">
+            <h3>Connexion Google Requise</h3>
+            <p style="font-size: 13px; color: #a1a1aa;">Veuillez vous authentifier pour accéder à l'espace collaboratif en direct.</p>
+            <div id="g_id_onload"
+                 data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+            <!-- Bouton de secours si le client ID n'est pas encore configuré -->
+            <button class="primary" style="margin-top:10px; justify-content:center;" onclick="manualGoogleLoginSimulation()">Connexion Rapide Google</button>
+        </div>
+    </div>
+
+    <!-- Modale Personnalisée (Alert / Prompt) -->
+    <div id="customModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="customModalTitle">Information</h3>
+            <p id="customModalText" style="font-size: 13px; color: #a1a1aa;"></p>
+            <input type="text" id="customModalInput" style="display:none; margin-top: 5px;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button id="customModalCancel" style="display:none;" onclick="closeCustomModal(false)">Annuler</button>
+                <button class="primary" onclick="closeCustomModal(true)">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre d'outils -->
     <header>
-        <div class="brand">
-            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" alt="Python+ Logo">
-            <h1>Python+</h1>
+        <div class="toolbar-group">
+            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" class="brand-logo" alt="Logo">
+            <button class="primary" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
+            <select id="execMode" onchange="changeExecMode()">
+                <option value="individual">Mode Individuel</option>
+                <option value="collective">Mode Collectif (Synchro)</option>
+            </select>
+            <button onclick="editSessionName()"><i class="fa-solid fa-pen"></i> <span id="sessionNameDisplay">Mon Projet Python</span></button>
         </div>
         <div class="toolbar-group">
-            <button class="btn primary" onclick="runCode()"><i class="fa-solid fa-play"></i> Exécuter</button>
-            
-            <div class="custom-select-wrapper">
-                <select id="execMode" onchange="changeExecMode()">
-                    <option value="individual">Mode Individuel</option>
-                    <option value="collective">Mode Collectif (Synchro)</option>
-                </select>
-            </div>
-
-            <div class="user-badge">
-                <i class="fa-solid fa-user-shield" style="color: var(--accent);"></i>
-                <span id="userNameDisplay">Utilisateur</span>
-                <span id="roleBadgeDisplay" class="badge-role">Éditeur</span>
-            </div>
-
-            <button class="btn" onclick="openShareModal()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
-            <button class="btn" id="modButton" style="display:none; background-color: var(--danger); border-color: var(--danger); color: white;" onclick="openModModal()"><i class="fa-solid fa-shield-halved"></i> Modération</button>
-            <button class="btn" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
+            <span id="userInfoDisplay" class="badge">Non connecté</span>
+            <button onclick="shareProject()"><i class="fa-solid fa-share-nodes"></i> Partager</button>
+            <button onclick="openSettings()"><i class="fa-solid fa-gear"></i> Paramètres</button>
         </div>
     </header>
 
-    <!-- Corps Principal -->
-    <div class="main-container">
-        <!-- Éditeur & Console -->
-        <div class="editor-section">
+    <!-- Contenu Principal avec redimensionnement -->
+    <div class="main-container" id="mainContainer">
+        <!-- Éditeur et Console -->
+        <div class="editor-section" id="editorSection">
             <textarea id="codeEditor"></textarea>
-            <div class="console-section">
+            <!-- Séparateur redimensionnable vertical de la console -->
+            <div class="resizer-y" id="resizerY"></div>
+            <div class="console-section" id="consoleSection">
                 <div class="console-header">
-                    <span><i class="fa-solid fa-terminal"></i> Console d'exécution Python+</span>
-                    <button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="clearConsole()">Effacer</button>
+                    <span><i class="fa-solid fa-terminal"></i> Console Python</span>
+                    <button onclick="clearConsole()" style="padding: 2px 6px; font-size:11px;">Effacer</button>
                 </div>
-                <div id="consoleOutput" class="console-output">Initialisation du moteur Python... Patientez...</div>
+                <div id="consoleOutput" class="console-output">Initialisation de Pyodide (Python Web)... Attendez...</div>
             </div>
         </div>
 
-        <!-- Panneau Latéral -->
-        <div class="sidebar-right">
+        <!-- Séparateur redimensionnable horizontal du panneau droit -->
+        <div class="resizer-x" id="resizerX"></div>
+
+        <!-- Panneau latéral (Collaboration & Historique & Participants) -->
+        <div class="sidebar-right" id="sidebarRight">
             <div class="panel-tabs">
-                <button class="tab-btn active" onclick="switchTab('collab')"><i class="fa-solid fa-users"></i> Projet</button>
-                <button class="tab-btn" onclick="switchTab('comments')"><i class="fa-solid fa-comments"></i> Chat (<span id="commentCount">0</span>)</button>
+                <button class="tab-btn active" onclick="switchTab('collab')">Projet</button>
+                <button class="tab-btn" onclick="switchTab('users')">Participants</button>
+                <button class="tab-btn" onclick="switchTab('history')">Activité</button>
+                <button class="tab-btn" onclick="switchTab('comments')">Chat</button>
             </div>
 
             <!-- Onglet Projet -->
             <div id="tab-collab" class="tab-content active">
                 <div class="form-group">
-                    <label>ID du Projet Sécurisé :</label>
+                    <label>ID de Session :</label>
                     <input type="text" id="projectIdInput" readonly>
                 </div>
                 <div class="form-group">
-                    <label>État de Synchronisation :</label>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--accent);">
-                        <i class="fa-solid fa-circle-check"></i> Connecté au Cloud Firebase
-                    </div>
+                    <label>Statut :</label>
+                    <span id="syncStatus" style="color: var(--success-color); font-size: 13px;"><i class="fa-solid fa-circle-check"></i> En direct (Firebase)</span>
                 </div>
-                <hr style="border-color: var(--border);">
-                <p style="font-size: 12px; color: var(--text-muted);">
-                    Le propriétaire du projet configure les accès (Lecteur / Éditeur) directement depuis le lien sécurisé chiffré.
-                </p>
+                <p style="font-size: 12px; color: #888;">Partagez le lien. Le créateur peut gérer les droits des participants depuis l'onglet Participants.</p>
             </div>
 
-            <!-- Onglet Chat / Commentaires -->
+            <!-- Onglet Participants & Pleins pouvoirs Admin -->
+            <div id="tab-users" class="tab-content">
+                <p style="font-size:11px; color:#888;">Gestion des accès par le créateur de la session :</p>
+                <div id="participantsList" style="display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
+
+            <!-- Onglet Activité (Qui modifie quoi et quand) -->
+            <div id="tab-history" class="tab-content">
+                <div id="activityLogList" style="display:flex; flex-direction:column; gap:6px; font-size:11px;"></div>
+            </div>
+
+            <!-- Onglet Chat -->
             <div id="tab-comments" class="tab-content">
                 <div id="commentsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-                <div style="display: flex; gap: 6px; margin-top: auto;">
-                    <input type="text" id="newCommentInput" placeholder="Écrire un message..." style="flex:1; padding: 8px; border-radius: 6px; background:var(--bg-main); border:1px solid var(--border); color:var(--text-main);">
-                    <button class="btn primary" onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
+                <div class="comment-input-area">
+                    <input type="text" id="newCommentInput" placeholder="Message...">
+                    <button onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal d'Authentification Obligatoire (Google & Pseudo) -->
-    <div id="authModal" class="modal" style="display: flex;">
-        <div class="modal-content" style="text-align: center;">
-            <img src="https://image.noelshack.com/fichiers/2026/42/5/1792182336-ajouter-un-sous-titre-1.png" style="height: 50px; margin: 0 auto;" alt="Logo">
-            <h2>Bienvenue sur Python+</h2>
-            <p style="font-size: 13px; color: var(--text-muted);">Connectez-vous pour accéder à l'environnement de développement collaboratif.</p>
-            <div class="form-group" style="text-align: left; margin-top: 10px;">
-                <label>Votre Pseudo :</label>
-                <input type="text" id="inputPseudo" placeholder="Ex: CodeurPro91">
-            </div>
-            <button class="btn primary" style="justify-content: center; width: 100%; margin-top: 10px; padding: 12px;" onclick="handleGoogleLogin()">
-                <i class="fa-brands fa-google"></i> Se connecter avec Google
-            </button>
         </div>
     </div>
 
     <!-- Modal Paramètres -->
-    <div id="settingsModal" class="modal">
+    <div id="settingsModal" class="modal" style="display:none;">
         <div class="modal-content">
             <h3><i class="fa-solid fa-gear"></i> Paramètres & Personnalisation</h3>
             <div class="form-group">
-                <label>Thème visuel :</label>
-                <div class="custom-select-wrapper" style="width:100%;">
-                    <select id="themeSelect" onchange="updateTheme()" style="width:100%;">
-                        <option value="dark">Sombre (Dracula Vert)</option>
-                        <option value="light">Clair (Épuré)</option>
-                        <option value="monokai">Monokai</option>
-                    </select>
-                </div>
+                <label>Thème :</label>
+                <select id="themeSelect" onchange="updateTheme()">
+                    <option value="dark">Sombre (Dracula)</option>
+                    <option value="light">Clair (Eclipse)</option>
+                    <option value="monokai">Monokai</option>
+                </select>
             </div>
             <div class="form-group">
-                <label>Police de code :</label>
-                <div class="custom-select-wrapper" style="width:100%;">
-                    <select id="fontSelect" onchange="updateFont()" style="width:100%;">
-                        <option value="'Fira Code', monospace">Fira Code</option>
-                        <option value="Consolas, monospace">Consolas</option>
-                        <option value="'Courier New', monospace">Courier New</option>
-                    </select>
-                </div>
+                <label>Police :</label>
+                <select id="fontSelect" onchange="updateFont()">
+                    <option value="Consolas, monospace">Consolas</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="'Fira Code', monospace">Fira Code</option>
+                </select>
             </div>
             <div class="form-group">
-                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight: normal;">
-                    <input type="checkbox" id="translateErrorsToggle" style="width: auto;"> Activer la traduction des erreurs Python en Français (avec lignes en rouge)
-                </label>
+                <label>Taille de police :</label>
+                <select id="fontSizeSelect" onchange="updateFontSize()">
+                    <option value="12px">12px</option>
+                    <option value="14px" selected>14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                </select>
             </div>
-            <button class="btn primary" style="align-self: flex-end;" onclick="closeSettings()">Enregistrer</button>
-        </div>
-    </div>
-
-    <!-- Modal Modération (Réservé au modérateur / 02lolomimi@gmail.com) -->
-    <div id="modModal" class="modal">
-        <div class="modal-content" style="width: 650px; max-height: 80vh; overflow-y: auto;">
-            <h3><i class="fa-solid fa-shield-halved" style="color: var(--accent);"></i> Panneau de Modération Central</h3>
-            <p style="font-size: 13px; color: var(--text-muted);">Gestion des projets, envois de mises en garde et sanctions préventives.</p>
-            
-            <div id="modProjectList" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                <!-- Chargé dynamiquement -->
-            </div>
-            <button class="btn" style="align-self: flex-end; margin-top: 10px;" onclick="closeModModal()">Fermer</button>
+            <button class="primary" onclick="closeSettings()" style="align-self: flex-end;">Fermer</button>
         </div>
     </div>
 
@@ -495,113 +476,85 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
 
     <!-- Firebase SDK & Logique Application -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             databaseURL: "https://python-7c55e-default-rtdb.europe-west1.firebasedatabase.app/"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Gestion sécurisée des rôles et des paramètres chiffrés en base (Empêche la triche par l'URL)
         const urlParams = new URLSearchParams(window.location.search);
         let projectId = urlParams.get('project') || 'projet_' + Math.random().toString(36).substring(2, 8);
         document.getElementById('projectIdInput').value = projectId;
 
-        window.firebaseDB = { db, ref, set, onValue, push, update, get, projectId };
+        window.firebaseDB = { db, ref, set, onValue, push, update, remove, projectId };
         window.currentUser = null;
-        window.userRole = 'editor';
+        window.isCreator = false;
 
-        // Connexion Google & Pseudo
-        window.handleGoogleLogin = function() {
-            const pseudo = document.getElementById('inputPseudo').value.trim();
-            if(!pseudo) {
-                alert("Veuillez entrer un pseudo valide.");
-                return;
-            }
-            // Simulation connexion Google sécurisée (avec email par défaut ou demandé)
-            let email = prompt("Confirmez votre adresse e-mail Google pour valider le compte :", "utilisateur@gmail.com");
+        // Réponse officielle Google Identity Services (GIS)
+        window.handleCredentialResponse = function(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+            completeLogin(responsePayload.email, responsePayload.name);
+        }
+
+        function decodeJwtResponse(token) {
+            let base64Url = token.split('.')[1];
+            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        window.manualGoogleLoginSimulation = function() {
+            let email = prompt("Adresse e-mail Google :", "utilisateur@gmail.com");
             if(!email) return;
+            let name = prompt("Votre Nom/Pseudo :", "Développeur");
+            completeLogin(email, name || "Anonyme");
+        }
 
-            window.currentUser = { pseudo, email };
-            document.getElementById('userNameDisplay').innerText = pseudo;
-            document.getElementById('authModal').style.display = 'none';
+        function completeLogin(email, pseudo) {
+            window.currentUser = { email, pseudo };
+            document.getElementById('userInfoDisplay').innerText = `${pseudo} (${email})`;
+            document.getElementById('googleAuthModal').style.display = 'none';
 
-            // Droits administrateur par défaut pour 02lolomimi@gmail.com
-            if(email.trim().toLowerCase() === '02lolomimi@gmail.com') {
-                window.userRole = 'admin';
-                document.getElementById('roleBadgeDisplay').innerText = "Propriétaire / Admin";
-                document.getElementById('modButton').style.display = 'flex';
-            } else {
-                // Vérifier les permissions dans la base Firebase pour ce projet
-                checkProjectRole(projectId, email);
-            }
-
-            initRealtimeSync();
-        };
-
-        function checkProjectRole(projId, email) {
-            const projRef = ref(db, 'projects/' + projId + '/permissions/' + email.replace('.', '_'));
-            get(projRef).then((snapshot) => {
-                if(snapshot.exists()) {
-                    window.userRole = snapshot.val(); // 'editor' ou 'reader'
+            // Vérifier si le créateur existe déjà dans la base
+            const sessionRef = ref(db, 'projects/' + projectId + '/meta');
+            onValue(sessionRef, (snap) => {
+                let data = snap.val();
+                if(!data || !data.creator) {
+                    // Premier connecté = Créateur avec pleins pouvoirs
+                    set(sessionRef, { creator: email, sessionName: "Mon Projet Python" });
+                    window.isCreator = true;
+                } else if(data.creator === email) {
+                    window.isCreator = true;
                 } else {
-                    window.userRole = 'editor'; // Par défaut créateur/éditeur
+                    window.isCreator = false;
                 }
-                updateRoleUI();
-            });
-        }
+            }, { onlyOnce: true });
 
-        function updateRoleUI() {
-            const badge = document.getElementById('roleBadgeDisplay');
-            if(window.userRole === 'reader') {
-                badge.innerText = "Lecteur (Commentaires)";
-                badge.style.backgroundColor = "var(--danger)";
-                editor.setOption('readOnly', true);
-            } else {
-                badge.innerText = "Éditeur";
-            }
-        }
-
-        function initRealtimeSync() {
-            const projectRef = ref(db, 'projects/' + projectId);
-            onValue(projectRef, (snapshot) => {
-                const data = snapshot.val();
-                if(data) {
-                    if(data.code && data.code !== editor.getValue() && !window.isLocalTyping) {
-                        window.isRemoteUpdate = true;
-                        let cursor = editor.getCursor();
-                        editor.setValue(data.code);
-                        editor.setCursor(cursor);
-                        window.isRemoteUpdate = false;
-                    }
-                    if(data.output && document.getElementById('execMode').value === 'collective') {
-                        document.getElementById('consoleOutput').innerText = data.output;
-                    }
-                    if(data.comments) {
-                        renderComments(data.comments);
-                    }
-                    // Vérifier si une mise en garde a été envoyée
-                    if(data.warning && window.currentUser) {
-                        alert("⚠️ AVERTISSEMENT DE MODÉRATION :\n" + data.warning);
-                    }
-                }
+            // Enregistrer l'utilisateur dans les participants
+            const userKey = email.replace(/[.#$\/\[\]]/g, '_');
+            set(ref(db, 'projects/' + projectId + '/participants/' + userKey), {
+                email, pseudo, role: 'editor', status: 'active', lastActive: new Date().toLocaleTimeString()
             });
+
+            window.initFirebaseSync();
         }
     </script>
 
-    <!-- Logique Éditeur & Python -->
+    <!-- Logique Éditeur, Redimensionnement, Activité et Exécution -->
     <script>
         let pyodideReady = false;
         let pyodideInstance = null;
         let editor = null;
-        let activeErrorMarker = null;
+        let isRemoteUpdate = false;
+        let activeErrorLine = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
             editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
@@ -610,42 +563,171 @@
                 lineNumbers: true,
                 autoCloseBrackets: true,
                 indentUnit: 4,
-                lineWrapping: true,
-                extraKeys: {
-                    "Ctrl-Space": "autocomplete"
-                }
+                lineWrapping: true
             });
 
             editor.on('change', (cm, change) => {
-                if(window.isRemoteUpdate) return;
-                if(window.userRole === 'reader') return;
-                window.isLocalTyping = true;
-                if(window.firebaseDB) {
-                    const { db, ref, update, projectId } = window.firebaseDB;
-                    update(ref(db, 'projects/' + projectId), { code: cm.getValue() });
+                if(isRemoteUpdate) return;
+                if(window.firebaseDB && window.currentUser) {
+                    const { db, ref, update, push, projectId } = window.firebaseDB;
+                    let code = cm.getValue();
+                    update(ref(db, 'projects/' + projectId), { code: code });
+                    
+                    // Enregistrer l'activité "qui modifie quoi et quand"
+                    push(ref(db, 'projects/' + projectId + '/activity'), {
+                        user: window.currentUser.pseudo,
+                        action: "a modifié le code source",
+                        time: new Date().toLocaleTimeString()
+                    });
                 }
-                setTimeout(() => { window.isLocalTyping = false; }, 300);
             });
 
-            // Chargement de Pyodide
             try {
                 pyodideInstance = await loadPyodide();
                 pyodideReady = true;
-                document.getElementById('consoleOutput').innerText = "Moteur Python+ prêt.\nCliquez sur 'Exécuter' pour tester votre code.";
+                document.getElementById('consoleOutput').innerText = "Environnement Python prêt (Pyodide v0.25.0).\nCliquez sur 'Exécuter'.";
             } catch (err) {
                 document.getElementById('consoleOutput').innerText = "Erreur de chargement Pyodide : " + err;
             }
+
+            initDynamicResizers();
         });
 
-        // Exécution du code avec analyse des erreurs et mise en surbrillance des lignes
+        // Gestion du redimensionnement dynamique (Largeur / Longueur / Hauteur des fenêtres)
+        function initDynamicResizers() {
+            const resizerX = document.getElementById('resizerX');
+            const resizerY = document.getElementById('resizerY');
+            const sidebarRight = document.getElementById('sidebarRight');
+            const consoleSection = document.getElementById('consoleSection');
+
+            let resizingX = false;
+            let resizingY = false;
+
+            resizerX.addEventListener('mousedown', () => resizingX = true);
+            resizerY.addEventListener('mousedown', () => resizingY = true);
+
+            window.addEventListener('mousemove', (e) => {
+                if (resizingX) {
+                    let newWidth = window.innerWidth - e.clientX;
+                    if (newWidth > 180 && newWidth < 600) {
+                        sidebarRight.style.width = newWidth + 'px';
+                    }
+                }
+                if (resizingY) {
+                    let newHeight = window.innerHeight - e.clientY - 40;
+                    if (newHeight > 50 && newHeight < 500) {
+                        consoleSection.style.height = newHeight + 'px';
+                    }
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                resizingX = false;
+                resizingY = false;
+            });
+        }
+
+        window.initFirebaseSync = function() {
+            const { db, ref, onValue, projectId } = window.firebaseDB;
+            
+            // Sync Code et Nom de session
+            onValue(ref(db, 'projects/' + projectId), (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    if(data.code && data.code !== editor.getValue()) {
+                        isRemoteUpdate = true;
+                        let cursor = editor.getCursor();
+                        editor.setValue(data.code);
+                        editor.setCursor(cursor);
+                        isRemoteUpdate = false;
+                    }
+                    if(data.meta && data.meta.sessionName) {
+                        document.getElementById('sessionNameDisplay').innerText = data.meta.sessionName;
+                    }
+                    if(data.output && document.getElementById('execMode').value === 'collective') {
+                        document.getElementById('consoleOutput').innerText = data.output;
+                    }
+                    if(data.comments) renderComments(data.comments);
+                    if(data.activity) renderActivity(data.activity);
+                    if(data.participants) renderParticipants(data.participants);
+
+                    // Vérifier si banni ou kické
+                    if(window.currentUser && data.participants) {
+                        let myKey = window.currentUser.email.replace(/[.#$\/\[\]]/g, '_');
+                        if(data.participants[myKey] && data.participants[myKey].status === 'banned') {
+                            alert("Vous avez été banni de cette session par le créateur.");
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Modification du nom de la session
+        function editSessionName() {
+            showCustomModal("Renommer la session", "Entrez le nouveau nom du projet :", true, (confirmed, val) => {
+                if(confirmed && val.trim() && window.firebaseDB) {
+                    const { db, ref, update, projectId } = window.firebaseDB;
+                    update(ref(db, 'projects/' + projectId + '/meta'), { sessionName: val.trim() });
+                }
+            });
+        }
+
+        // Pleins pouvoirs du créateur (Kick, Ban, Promouvoir)
+        window.moderateUser = function(userKey, action) {
+            if(!window.isCreator) {
+                alert("Seul le créateur de la session possède les pleins pouvoirs.");
+                return;
+            }
+            const { db, ref, update, remove, projectId } = window.firebaseDB;
+            if(action === 'kick') {
+                remove(ref(db, 'projects/' + projectId + '/participants/' + userKey));
+            } else if(action === 'ban') {
+                update(ref(db, 'projects/' + projectId + '/participants/' + userKey), { status: 'banned' });
+            } else if(action === 'promote') {
+                update(ref(db, 'projects/' + projectId + '/participants/' + userKey), { role: 'co-admin' });
+            }
+        }
+
+        function renderParticipants(partsObj) {
+            const list = document.getElementById('participantsList');
+            list.innerHTML = "";
+            for(let key in partsObj) {
+                let p = partsObj[key];
+                list.innerHTML += `
+                    <div class="user-item">
+                        <span><b>${p.pseudo}</b> (${p.role})</span>
+                        ${window.isCreator ? `
+                            <div style="display:flex; gap:4px;">
+                                <button onclick="moderateUser('${key}', 'promote')" style="font-size:10px; padding:2px 4px;">Promouvoir</button>
+                                <button onclick="moderateUser('${key}', 'kick')" style="font-size:10px; padding:2px 4px; background:var(--danger-color); color:#111;">Kick</button>
+                                <button onclick="moderateUser('${key}', 'ban')" style="font-size:10px; padding:2px 4px; background:#000; color:#fff;">Ban</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        }
+
+        function renderActivity(actObj) {
+            const list = document.getElementById('activityLogList');
+            list.innerHTML = "";
+            let items = [];
+            for(let k in actObj) items.push(actObj[k]);
+            items.reverse().slice(0, 20).forEach(item => {
+                list.innerHTML += `<div style="padding:4px; border-bottom:1px solid var(--border-color);"><b>${item.user}</b> ${item.action} <span style="color:#888;">(${item.time})</span></div>`;
+            });
+        }
+
+        // Exécution Python avec surbrillance rouge permanente de la ligne d'erreur
         async function runCode() {
             if(!pyodideReady) {
                 alert("Moteur Python en cours de chargement...");
                 return;
             }
-            if(activeErrorMarker) {
-                editor.removeLineClass(activeErrorMarker, "background", "error-highlight-line");
-                activeErrorMarker = null;
+            if(activeErrorLine !== null) {
+                editor.removeLineClass(activeErrorLine, "background", "error-line-highlight");
+                activeErrorLine = null;
             }
 
             const code = editor.getValue();
@@ -658,21 +740,17 @@
 
             try {
                 await pyodideInstance.runPythonAsync(code);
-                if(stdout === "") outputDiv.innerText = "Exécution réussie (aucune sortie).";
+                if(stdout === "") outputDiv.innerText = "Exécution terminée avec succès.";
             } catch (err) {
                 let errStr = err.toString();
-                outputDiv.innerText += "\n" + errStr;
-
-                if(document.getElementById('translateErrorsToggle').checked) {
-                    let lineMatch = errStr.match(/line (\d+)/i) || errStr.match(/File "<exec>", line (\d+)/);
-                    if(lineMatch && lineMatch[1]) {
-                        let lineNum = parseInt(lineMatch[1]) - 1;
-                        activeErrorMarker = lineNum;
-                        editor.addLineClass(lineNum, "background", "error-highlight-line");
-                        editor.setCursor({line: lineNum, ch: 0});
-                    }
-                    outputDiv.innerText = translatePythonError(errStr);
+                let match = errStr.match(/line (\d+)/i) || errStr.match(/File "<exec>", line (\d+)/);
+                if(match && match[1]) {
+                    let lineNum = parseInt(match[1]) - 1;
+                    activeErrorLine = lineNum;
+                    editor.addLineClass(lineNum, "background", "error-line-highlight");
+                    editor.setCursor({line: lineNum, ch: 0});
                 }
+                outputDiv.innerText += "\n❌ " + errStr;
             }
 
             if(document.getElementById('execMode').value === 'collective' && window.firebaseDB) {
@@ -681,43 +759,21 @@
             }
         }
 
-        function translatePythonError(errStr) {
-            let lineInfo = "";
-            let match = errStr.match(/line (\d+)/i);
-            if(match) {
-                lineInfo = ` [Ligne ${match[1]}]`;
-                let lineNum = parseInt(match[1]) - 1;
-                editor.addLineClass(lineNum, "background", "error-highlight-line");
-                activeErrorMarker = lineNum;
-            }
-
-            if(errStr.includes("SyntaxError")) return `❌ Erreur de syntaxe${lineInfo} : Vérifiez vos parenthèses, guillemets ou deux-points oubliés. La ligne concernée a été mise en surbrillance rouge.`;
-            if(errStr.includes("NameError")) return `❌ Erreur de nom${lineInfo} : Vous utilisez une variable ou fonction non définie ou mal orthographiée.`;
-            if(errStr.includes("TypeError")) return `❌ Erreur de type${lineInfo} : Opération invalide entre des types de données incompatibles.`;
-            if(errStr.includes("IndentationError")) return `❌ Erreur d'indentation${lineInfo} : Problème d'espaces ou de tabulations.`;
-            if(errStr.includes("ZeroDivisionError")) return `❌ Erreur mathématique${lineInfo} : Division par zéro impossible.`;
-            return `❌ Erreur${lineInfo} : ` + errStr;
-        }
-
         function clearConsole() {
             document.getElementById('consoleOutput').innerText = "";
-            if(activeErrorMarker !== null) {
-                editor.removeLineClass(activeErrorMarker, "background", "error-highlight-line");
-                activeErrorMarker = null;
+            if(activeErrorLine !== null) {
+                editor.removeLineClass(activeErrorLine, "background", "error-line-highlight");
+                activeErrorLine = null;
             }
         }
 
-        // Gestion Onglets & Chat
-        function switchTab(tab) {
+        function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if(tab === 'collab') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('tab-collab').classList.add('active');
-            } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('tab-comments').classList.add('active');
-            }
+            if(tabName === 'collab') { document.querySelectorAll('.tab-btn')[0].classList.add('active'); document.getElementById('tab-collab').classList.add('active'); }
+            else if(tabName === 'users') { document.querySelectorAll('.tab-btn')[1].classList.add('active'); document.getElementById('tab-users').classList.add('active'); }
+            else if(tabName === 'history') { document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-history').classList.add('active'); }
+            else { document.querySelectorAll('.tab-btn')[3].classList.add('active'); document.getElementById('tab-comments').classList.add('active'); }
         }
 
         function addComment() {
@@ -735,115 +791,47 @@
         function renderComments(commentsObj) {
             const list = document.getElementById('commentsList');
             list.innerHTML = "";
-            let count = 0;
             for(let key in commentsObj) {
                 let c = commentsObj[key];
-                count++;
-                list.innerHTML += `<div style="background:var(--bg-hover); padding:10px; border-radius:8px; font-size:12px; border-left:3px solid var(--accent);"><b>${c.author}</b> (${c.time})<br>${c.text}</div>`;
-            }
-            document.getElementById('commentCount').innerText = count;
-        }
-
-        // Partage sécurisé avec choix de rôle stocké en base
-        function openShareModal() {
-            const roleChoice = confirm("Partager en mode ÉDITEUR ?\n(Cliquez sur Annuler pour un partage en mode LECTEUR)") ? "editor" : "reader";
-            const shareUrl = `${window.location.origin}${window.location.pathname}?project=${window.firebaseDB.projectId}`;
-            prompt("Lien sécurisé du projet (les rôles sont gérés en arrière-plan) :", shareUrl);
-        }
-
-        // Panneau de Modération (Accessible par 02lolomimi@gmail.com)
-        function openModModal() {
-            document.getElementById('modModal').style.display = 'flex';
-            loadAllProjectsForModeration();
-        }
-        function closeModModal() {
-            document.getElementById('modModal').style.display = 'none';
-        }
-
-        function loadAllProjectsForModeration() {
-            const { db, ref, get } = window.firebaseDB;
-            get(ref(db, 'projects')).then((snapshot) => {
-                const listDiv = document.getElementById('modProjectList');
-                listDiv.innerHTML = "";
-                if(snapshot.exists()) {
-                    snapshot.forEach((childSnapshot) => {
-                        let pId = childSnapshot.key;
-                        let pData = childSnapshot.val();
-                        let previewCode = pData.code ? pData.code.substring(0, 60) + "..." : "Vide";
-                        let warningsCount = pData.warningsCount || 0;
-
-                        listDiv.innerHTML += `
-                            <div style="background:var(--bg-main); padding:12px; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <b>ID Projet : ${pId}</b>
-                                    <span style="font-size:11px; color:var(--warning);">Mises en garde : ${warningsCount}</span>
-                                </div>
-                                <code style="font-size:11px; color:var(--text-muted); background:var(--bg-hover); padding:4px; border-radius:4px;">${previewCode}</code>
-                                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                                    <button class="btn" style="padding:4px 8px; font-size:11px; background:var(--warning); color:#000;" onclick="sendWarning('${pId}')"><i class="fa-solid fa-triangle-exclamation"></i> Envoyer Mise en garde</button>
-                                    ${warningsCount >= 3 ? `<button class="btn" style="padding:4px 8px; font-size:11px; background:var(--danger); color:white;" onclick="deleteProject('${pId}')"><i class="fa-solid fa-trash"></i> Supprimer</button>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    listDiv.innerHTML = "<p>Aucun projet actif trouvé.</p>";
-                }
-            });
-        }
-
-        window.sendWarning = function(pId) {
-            let msg = prompt("Rédigez la mise en garde pour les développeurs de ce projet :");
-            if(!msg) return;
-            const { db, ref, update, get } = window.firebaseDB;
-            const projRef = ref(db, 'projects/' + pId);
-            get(projRef).then((snap) => {
-                let currentWarnings = (snap.val() && snap.val().warningsCount) ? snap.val().warningsCount + 1 : 1;
-                update(projRef, {
-                    warning: msg,
-                    warningsCount: currentWarnings
-                });
-                alert("Mise en garde envoyée avec succès !");
-                loadAllProjectsForModeration();
-            });
-        }
-
-        window.deleteProject = function(pId) {
-            if(confirm("Attention : Ce projet a accumulé plusieurs mises en garde. Voulez-vous vraiment le supprimer définitivement ?")) {
-                const { db, ref, set } = window.firebaseDB;
-                set(ref(db, 'projects/' + pId), null);
-                alert("Projet supprimé.");
-                loadAllProjectsForModeration();
+                list.innerHTML += `<div class="comment-box"><b>${c.author}</b> (${c.time})<br>${c.text}</div>`;
             }
         }
 
-        // Paramètres UI
+        let modalCallback = null;
+        function showCustomModal(title, text, showInput, callback) {
+            document.getElementById('customModalTitle').innerText = title;
+            document.getElementById('customModalText').innerText = text;
+            const input = document.getElementById('customModalInput');
+            const cancelBtn = document.getElementById('customModalCancel');
+            if(showInput) { input.style.display = 'block'; cancelBtn.style.display = 'block'; input.value = ""; }
+            else { input.style.display = 'none'; cancelBtn.style.display = 'none'; }
+            document.getElementById('customModal').style.display = 'flex';
+            modalCallback = callback;
+        }
+
+        function closeCustomModal(confirmed) {
+            document.getElementById('customModal').style.display = 'none';
+            const val = document.getElementById('customModalInput').value;
+            if(modalCallback) modalCallback(confirmed, val);
+        }
+
+        function shareProject() {
+            const url = `${window.location.origin}${window.location.pathname}?project=${window.firebaseDB.projectId}`;
+            showCustomModal("Partager le lien", url, true, () => {});
+        }
+
         function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
         
         function updateTheme() {
             const theme = document.getElementById('themeSelect').value;
-            if(theme === 'light') {
-                document.body.setAttribute('data-theme', 'light');
-                editor.setOption('theme', 'eclipse');
-            } else if(theme === 'monokai') {
-                document.body.setAttribute('data-theme', 'dark');
-                editor.setOption('theme', 'monokai');
-            } else {
-                document.body.setAttribute('data-theme', 'dark');
-                editor.setOption('theme', 'dracula');
-            }
+            if(theme === 'light') { document.body.setAttribute('data-theme', 'light'); editor.setOption('theme', 'eclipse'); }
+            else if(theme === 'monokai') { document.body.setAttribute('data-theme', 'dark'); editor.setOption('theme', 'monokai'); }
+            else { document.body.setAttribute('data-theme', 'dark'); editor.setOption('theme', 'dracula'); }
         }
-        function updateFont() {
-            const font = document.getElementById('fontSelect').value;
-            document.documentElement.style.setProperty('--font-code', font);
-            editor.refresh();
-        }
-        function changeExecMode() {
-            if(document.getElementById('execMode').value === 'collective') {
-                alert("Mode Collectif activé : Les résultats de la console sont partagés en direct.");
-            }
-        }
+        function updateFont() { document.documentElement.style.setProperty('--font-family', document.getElementById('fontSelect').value); editor.refresh(); }
+        function updateFontSize() { document.documentElement.style.setProperty('--font-size', document.getElementById('fontSizeSelect').value); editor.refresh(); }
+        function changeExecMode() {}
     </script>
 </body>
 </html>
